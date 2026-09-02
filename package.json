@@ -1,0 +1,32 @@
+{
+  "name": "cover_project",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie": "^2.0.1",
+    "imagekit": "^6.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^1.33.0",
+    "mongoose": "^9.9.4",
+    "next": "16.3.1",
+    "nodemailer": "^9.1.1",
+    "razorpay": "^2.9.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "nodemon": "^3.1.14",
+    "tailwindcss": "^4"
+  }
+}
