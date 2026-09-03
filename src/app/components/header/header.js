@@ -1,31 +1,28 @@
 // app/components/Navbar.jsx
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { 
   Home,
   Compass, 
   ShoppingBag, 
   Package, 
   User, 
-  Menu, 
-  X,
-  Sparkles,
   Info,
   PhoneCall
 } from "lucide-react";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
-  // Navigation Links Data with Info, About, and Contact
+  // Navigation Links Data
   const navLinks = [
     { name: "Home", href: "/", icon: <Home className="w-5 h-5" /> },
     { name: "Explore", href: "/explore", icon: <Compass className="w-5 h-5" /> },
     { name: "Cart", href: "/cart", icon: <ShoppingBag className="w-5 h-5" /> },
     { name: "Orders", href: "/orders", icon: <Package className="w-5 h-5" /> },
-    { name: "About Us", href: "/about", icon: <Info className="w-5 h-5" /> },
+    { name: "About", href: "/about", icon: <Info className="w-5 h-5" /> },
     { name: "Info", href: "/info", icon: <Info className="w-5 h-5" /> },
     { name: "Contact", href: "/contact", icon: <PhoneCall className="w-5 h-5" /> },
     { name: "Account", href: "/account", icon: <User className="w-5 h-5" /> },
@@ -60,77 +57,41 @@ export default function Navbar() {
         </Link>
       </header>
 
-      {/* ================= MOBILE TOP HEADER (BLACK) ================= */}
-      <header className="md:hidden sticky top-0 z-45 w-full bg-[#0B0B0B]/90 backdrop-blur-xl border-b border-neutral-800 px-5 py-3.5 flex items-center justify-between shadow-lg">
+      {/* ================= MOBILE TOP HEADER (ONLY BRAND NAME & BAG ICON) ================= */}
+      <header className="md:hidden sticky top-0 z-45 w-full bg-[#0B0B0B]/95 backdrop-blur-xl border-b border-neutral-800 px-5 py-3.5 flex items-center justify-between shadow-lg">
         <Link href="/" className="text-lg font-serif font-bold tracking-tight text-white flex items-center gap-1.5 group">
           <span>MWCover</span>
         </Link>
 
         <Link
           href="/cart"
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-neutral-950 rounded-full text-[11px] font-bold shadow-md transition-all"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-neutral-950 rounded-full text-[11px] font-bold shadow-md transition-all"
         >
-          <ShoppingBag className="w-3 h-3 text-neutral-950" />
+          <ShoppingBag className="w-3.5 h-3.5 text-neutral-950" />
           <span>Bag</span>
         </Link>
       </header>
 
-      {/* ================= MOBILE FLOATING BOTTOM NAVBAR (BLACK) ================= */}
-      <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-neutral-900/95 text-white backdrop-blur-2xl border border-white/10 px-6 py-3 flex items-center gap-6 rounded-3xl shadow-2xl">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 text-white transition-colors focus:outline-none group cursor-pointer"
-          aria-label="Open Menu"
-        >
-          <div className="p-1 rounded-full group-hover:bg-white/10 transition-all">
-            <Menu className="w-5 h-5 text-yellow-400" />
-          </div>
-          <span className="text-xs font-extrabold tracking-wide text-yellow-400">Menu</span>
-        </button>
-      </div>
-
-      {/* ================= MOBILE LIGHT LUXURY GLASS MODAL (WHITE THEME) ================= */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex items-center justify-center p-4">
-          <div 
-            className="absolute inset-0 bg-zinc-950/40 backdrop-blur-sm transition-opacity"
-            onClick={() => setIsOpen(false)}
-          />
-
-          <div className="relative w-full max-w-xs bg-[#FAF9F5] backdrop-blur-2xl border border-zinc-200/80 shadow-2xl rounded-3xl p-6 flex flex-col items-center animate-in fade-in zoom-in duration-200 max-h-[85vh] overflow-y-auto">
-            
-            <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-800 transition-colors cursor-pointer"
-              aria-label="Close Menu"
+      {/* ================= MOBILE BOTTOM APP DOCK (FIXED APP-LIKE NAVIGATION) ================= */}
+      <nav className="md:hidden fixed bottom-3 left-3 right-3 z-50 bg-neutral-900/98 text-white backdrop-blur-2xl border border-white/15 px-3 py-2 flex items-center justify-between rounded-3xl shadow-2xl">
+        {navLinks.map((link) => {
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.name}
+              href={link.href}
+              className={`flex flex-col items-center justify-center py-1 px-1.5 rounded-2xl transition-all ${
+                isActive ? "text-yellow-400 font-bold scale-105" : "text-neutral-400 hover:text-white"
+              }`}
             >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-2 mb-6">
-              <Sparkles className="w-4 h-4 text-yellow-500" />
-              <h3 className="text-sm font-extrabold uppercase tracking-widest text-zinc-900">
-                Menu / MWCover
-              </h3>
-            </div>
-
-            <div className="w-full flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-white hover:bg-yellow-400 hover:text-zinc-950 text-zinc-800 font-bold text-xs transition-all shadow-xs border border-zinc-200/80 group"
-                >
-                  <span className="text-yellow-400 group-hover:text-zinc-950 transition-colors">{link.icon}</span>
-                  <span>{link.name}</span>
-                </Link>
-              ))}
-            </div>
-
-          </div>
-        </div>
-      )}
+              <span className={`transition-transform ${isActive ? "text-yellow-400" : "text-neutral-400"}`}>
+                {link.icon}
+              </span>
+              <span className="text-[9px] mt-1 tracking-tight">{link.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </>
   );
 }
