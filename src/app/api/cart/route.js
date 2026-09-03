@@ -1,34 +1,57 @@
-
-// app/api/cart/route.js (Updated API to create a new row on every add-to-cart click)
+// app/api/cart/route.js
 import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import Cart from "@/models/Cart";
 
-// GET: Fetch all items in the cart collection
+// Helper function to get userId from Cookie token
+function getUserIdFromToken(request) {
+  try {
+    const token = request.cookies.get("token")?.value;
+    if (!token) return null;
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.userId || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+// GET: Fetch cart items strictly for the logged-in user
 export async function GET(request) {
   try {
+    const userId = getUserIdFromToken(request);
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized. Please login first." }, { status: 401 });
+    }
+
     await connectDB();
-    const cartItems = await Cart.find({ userId: "guest" });
+    const cartItems = await Cart.find({ userId });
     return NextResponse.json({ success: true, data: cartItems }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
-// POST: Always create a new entry in the collection on every click
+// POST: Create a new cart entry only if the user is authenticated
 export async function POST(request) {
   try {
+    const userId = getUserIdFromToken(request);
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized. Please login first." }, { status: 401 });
+    }
+
     await connectDB();
     const { productId, title, price, imageUrl } = await request.json();
 
-    // Directly create a new document every time without checking for duplicates
+    // Create new item linked to the logged-in user's ID instead of "guest"
     const newItem = await Cart.create({
-      userId: "guest",
+      userId,
       productId,
       title,
       price,
       imageUrl,
-      quantity: 1, // Quantity stays 1 per row
+      quantity: 1,
     });
 
     return NextResponse.json({ success: true, data: newItem }, { status: 200 });
@@ -37,17 +60,23 @@ export async function POST(request) {
   }
 }
 
-// DELETE: Remove specific item row by its unique MongoDB _id
+// DELETE: Remove specific item row ensuring it belongs to the logged-in user
 export async function DELETE(request) {
   try {
+    const userId = getUserIdFromToken(request);
+    if (!userId) {
+      return NextResponse.json({ success: false, error: "Unauthorized. Please login first." }, { status: 401 });
+    }
+
     await connectDB();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    await Cart.findByIdAndDelete(id);
+    // Delete item only if it matches the item ID and belongs to this user
+    await Cart.findOneAndDelete({ _id: id, userId });
+    
     return NextResponse.json({ success: true, message: "Item removed" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
-

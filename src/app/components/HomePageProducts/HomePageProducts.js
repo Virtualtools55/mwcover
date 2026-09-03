@@ -1,5 +1,3 @@
-
-
 // components/HomePageProducts.jsx
 "use client";
 
@@ -51,6 +49,12 @@ export default function HomePageProducts() {
         }),
       });
 
+      // अगर यूजर लॉगिन नहीं है (401 Unauthorized)
+      if (res.status === 401) {
+        router.push("/auth/signin");
+        return;
+      }
+
       const json = await res.json();
 
       if (json.success) {
@@ -62,15 +66,25 @@ export default function HomePageProducts() {
       }
     } catch (err) {
       console.error("Cart API error:", err);
-      setToastMessage("Server error while adding to cart");
-      setTimeout(() => setToastMessage(""), 2500);
+      router.push("/auth/signin");
     }
   };
 
-  const handleInstantBuy = (e, product) => {
+  const handleInstantBuy = async (e, product) => {
     e.stopPropagation(); // Prevents card click from firing
-    // Redirects directly to the specific product detail page
-    router.push(`/product/${product._id}`);
+    
+    // चेक करें कि यूजर लॉगिन है या नहीं (मान लीजिए हमारे पास कोई चेक API है या हम सीधा राऊट पर भेजें जो मिडलवेयर से सुरक्षित हो)
+    // सबसे सुरक्षित तरीका है कि प्रोडक्ट पेज पर जाने से पहले या सीधे चेक करें:
+    try {
+      const res = await fetch("/api/cart"); // एक हल्की रिक्वेस्ट भेजकर ऑथेंटिकेशन चेक कर सकते हैं
+      if (res.status === 401) {
+        router.push("/auth/signin");
+        return;
+      }
+      router.push(`/product/${product._id}`);
+    } catch (err) {
+      router.push("/auth/signin");
+    }
   };
 
   if (loading) {
@@ -132,7 +146,10 @@ export default function HomePageProducts() {
           {products.map((product) => (
             <div 
               key={product._id} 
-              onClick={() => router.push(`/product/${product._id}`)}
+              onClick={() => {
+                // कार्ड पर क्लिक करने पर भी चेक कर सकते हैं या सीधा प्रोडक्ट पेज पर भेज सकते हैं (यदि मिडलवेयर `/product/:path*` को प्रोटेक्ट करता है)
+                router.push(`/product/${product._id}`);
+              }}
               className="bg-white rounded-2xl p-2.5 shadow-sm border border-neutral-100 flex flex-col justify-between transition-all duration-300 hover:shadow-md group cursor-pointer"
             >
               <div>
@@ -190,4 +207,3 @@ export default function HomePageProducts() {
     </div>
   );
 }
-

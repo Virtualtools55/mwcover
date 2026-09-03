@@ -1,4 +1,4 @@
-
+// app/cart/page.jsx (Updated with Auth Redirect)
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,8 +16,17 @@ export default function CartPage() {
   const fetchCartItems = async () => {
     try {
       const res = await fetch("/api/cart");
+      
+      // अगर यूजर लॉगिन नहीं है (401 Unauthorized), तो तुरंत साइन-इन पेज पर भेजें
+      if (res.status === 401) {
+        router.push("/auth/signin");
+        return;
+      }
+
       const json = await res.json();
-      if (json.success) setCart(json.data);
+      if (json.success) {
+        setCart(json.data);
+      }
     } catch (err) {
       console.error("Failed to fetch cart:", err);
     } finally {
@@ -32,6 +41,10 @@ export default function CartPage() {
   const removeItem = async (id) => {
     try {
       const res = await fetch(`/api/cart?id=${id}`, { method: "DELETE" });
+      if (res.status === 401) {
+        router.push("/auth/signin");
+        return;
+      }
       const json = await res.json();
       if (json.success) {
         fetchCartItems();
@@ -41,7 +54,6 @@ export default function CartPage() {
     }
   };
 
-  // Precise calculation based on unique items and quantities from database / state
   const subtotal = cart.reduce((acc, item) => {
     const price = Number(item.price) || 0;
     const qty = Number(item.quantity) || 1;
@@ -94,7 +106,7 @@ export default function CartPage() {
                       <p className="text-xs font-black mt-1">₹{item.price} {item.quantity > 1 && <span className="text-[10px] text-neutral-400 font-normal">× {item.quantity}</span>}</p>
                     </div>
                   </div>
-                  <button onClick={() => removeItem(item._id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors shrink-0">
+                  <button onClick={() => removeItem(item._id)} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors shrink-0 cursor-pointer">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -128,4 +140,3 @@ export default function CartPage() {
     </div>
   );
 }
-
