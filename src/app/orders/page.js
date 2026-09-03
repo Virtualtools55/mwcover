@@ -1,12 +1,12 @@
-
+// app/orders/page.js
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2, AlertCircle, Clock, ArrowLeft, PackageCheck } from "lucide-react";
 import Link from "next/link";
 
-export default function OrdersPage() {
+function OrdersContent() {
   const searchParams = useSearchParams();
   const isSuccess = searchParams.get("success");
   const isFailed = searchParams.get("failed");
@@ -110,7 +110,6 @@ export default function OrdersPage() {
                     </span>
                   </div>
 
-                  {/* Aesthetic Delivery Banner for Paid Orders */}
                   {order.status === "Paid" && (
                     <div className="flex items-center gap-2.5 bg-neutral-50 border border-neutral-100 rounded-2xl px-4 py-3 text-xs text-neutral-700">
                       <PackageCheck className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -157,3 +156,14 @@ export default function OrdersPage() {
   );
 }
 
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-neutral-900" />
+      </div>
+    }>
+      <OrdersContent />
+    </Suspense>
+  );
+}
