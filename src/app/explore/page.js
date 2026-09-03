@@ -1,3 +1,4 @@
+// app/explore/page.js
 "use client";
 
 import { useState } from "react";
@@ -116,20 +117,20 @@ export default function ExplorePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900 px-4 sm:px-8 py-12 pb-28">
+    <div className="min-h-screen bg-[#FAF9F5] text-zinc-900 px-6 md:px-12 py-14 pb-28 selection:bg-yellow-400 selection:text-zinc-950">
       <div className="max-w-6xl mx-auto mb-12">
         <div className="flex items-center gap-2 mb-3">
-          <span className="p-1.5 bg-yellow-400/20 border border-yellow-400/40 rounded-xl text-yellow-600">
+          <span className="p-1.5 bg-yellow-400 rounded-xl text-zinc-950 shadow-xs">
             <Compass className="w-4 h-4" />
           </span>
-          <span className="text-[10px] tracking-widest font-extrabold uppercase bg-neutral-100 text-neutral-900 px-3 py-1 rounded-full border border-neutral-200">
+          <span className="text-[10px] tracking-widest font-extrabold uppercase bg-white text-zinc-900 px-3 py-1 rounded-full border border-zinc-200/80 shadow-xs">
             Full Catalog Directory
           </span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-neutral-900">
+        <h1 className="text-3xl sm:text-5xl font-serif font-bold tracking-tight text-zinc-900">
           Explore All Categories.
         </h1>
-        <p className="text-neutral-500 text-xs sm:text-sm mt-2 max-w-lg">
+        <p className="text-zinc-500 text-xs sm:text-sm mt-2 max-w-lg">
           Browse through our complete collection of mobile accessories and precision gear.
         </p>
       </div>
@@ -138,18 +139,18 @@ export default function ExplorePage() {
         {categories.map((cat) => (
           <div
             key={cat.title}
-            className="bg-neutral-50/80 border border-neutral-200 hover:border-yellow-400 rounded-3xl p-6 transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-xl hover:shadow-yellow-400/10"
+            className="bg-white border border-zinc-200/80 hover:border-yellow-400 rounded-3xl p-6 transition-all duration-300 flex flex-col justify-between shadow-sm hover:shadow-lg hover:shadow-yellow-300/50"
           >
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-[10px] font-bold tracking-wider uppercase bg-white text-neutral-900 px-3 py-1 rounded-full border border-neutral-200 shadow-sm">
+                <span className="text-[10px] font-bold tracking-wider uppercase bg-[#FAF9F5] text-zinc-900 px-3 py-1 rounded-full border border-zinc-200/80 shadow-xs">
                   {cat.subcategories.length} Items
                 </span>
-                <span className="p-2 bg-white text-neutral-700 rounded-2xl border border-neutral-200 shadow-xs">
+                <span className="p-2 bg-yellow-400 text-zinc-950 rounded-2xl shadow-md">
                   <ArrowUpRight className="w-4 h-4" />
                 </span>
               </div>
-              <h3 className="text-lg font-black tracking-tight text-neutral-900 mb-4">
+              <h3 className="text-lg font-serif font-bold tracking-tight text-zinc-900 mb-4">
                 {cat.title}
               </h3>
               
@@ -158,9 +159,9 @@ export default function ExplorePage() {
                   <li key={sub}>
                     <Link
                       href={`/categories/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                      className="text-xs font-semibold text-neutral-600 hover:text-yellow-600 flex items-center gap-2 transition-colors py-1 group"
+                      className="text-xs font-semibold text-zinc-600 hover:text-yellow-400 flex items-center gap-2 transition-colors py-1 group"
                     >
-                      <ChevronRight className="w-3 h-3 text-neutral-400 group-hover:text-yellow-500 transition-colors" />
+                      <ChevronRight className="w-3 h-3 text-zinc-400 group-hover:text-yellow-400 transition-colors" />
                       <span>{sub}</span>
                     </Link>
                   </li>
@@ -168,9 +169,9 @@ export default function ExplorePage() {
               </ul>
             </div>
 
-            <div className="pt-4 border-t border-neutral-200/80 flex items-center justify-between text-xs font-bold text-neutral-500">
+            <div className="pt-4 border-t border-zinc-100 flex items-center justify-between text-xs font-bold text-zinc-500">
               <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
+                <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
                 <span>Explore Section</span>
               </span>
             </div>

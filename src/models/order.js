@@ -9,13 +9,14 @@ const OrderSchema = new mongoose.Schema({
       price: { type: Number, required: true },
       imageUrl: { type: String },
       quantity: { type: Number, default: 1 }
-    }
+    },
   ],
   amount: { type: Number, required: true },
   razorpayOrderId: { type: String, required: true },
   razorpayPaymentId: { type: String },
-  status: { type: String, default: "Paid" }, // Paid, Failed, Cancelled & Refunded
-  createdAt: { type: Date, default: Date.now }
+  status: { type: String, default: "Paid" }, // Paid, Failed, Cancelled & Refunded, Delivered, Cancelled
+  createdAt: { type: Date, default: Date.now },
+ 
 });
 
 export default mongoose.models.Order || mongoose.model("Order", OrderSchema);

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -26,7 +25,11 @@ export default function DeliveryPage() {
       if (res.status === 403 || !json.success) {
         setUnauthorized(true);
       } else {
-        setOrders(json.orders);
+        // Filter only orders with status "Paid" (exclude Failed, Cancelled, Refund Initiated, Delivered)
+        const activeOrders = (json.orders || []).filter(
+          (order) => order.status === "Paid"
+        );
+        setOrders(activeOrders);
         setClientIp(json.clientIp);
         setUnauthorized(false);
       }
@@ -133,11 +136,10 @@ export default function DeliveryPage() {
         <div className="space-y-4">
           {orders.length === 0 ? (
             <div className="bg-white rounded-2xl p-12 text-center border border-stone-200/80 shadow-sm">
-              <p className="text-xs text-stone-500 font-medium">No orders found.</p>
+              <p className="text-xs text-stone-500 font-medium">No pending delivery orders found.</p>
             </div>
           ) : (
             orders.map((order) => {
-              // Extract customer name & email supporting populated user relation or direct fields
               const customerName = 
                 order.userId?.name || 
                 order.name || 
@@ -156,21 +158,15 @@ export default function DeliveryPage() {
                 <div key={order._id} className="bg-white rounded-2xl p-6 border border-stone-200/80 shadow-sm space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-stone-100 pb-3 gap-2">
                     <div>
-                      {/* Customer ID completely hidden per instruction */}
                       <span className="text-xs font-serif font-bold text-stone-900">
                         Order Items & Details
                       </span>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full w-fit ${
-                      order.status === "Paid" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
-                      order.status === "Delivered" ? "bg-blue-50 text-blue-700 border border-blue-200" :
-                      "bg-rose-50 text-rose-700 border border-rose-200"
-                    }`}>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full w-fit bg-emerald-50 text-emerald-700 border border-emerald-200">
                       {order.status}
                     </span>
                   </div>
 
-                  {/* Product List with Image Fallbacks and Customer Name Display */}
                   <div className="space-y-3">
                     {order.products?.map((p, idx) => {
                       const productImg = p.image || p.img || p.imgUrl || p.imageUrl;
@@ -200,29 +196,26 @@ export default function DeliveryPage() {
                     })}
                   </div>
 
-                  {/* Footer & Action Buttons */}
                   <div className="pt-3 border-t border-stone-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
                     <div>
                       <span className="text-stone-500">Total Amount: <strong className="text-stone-900 font-bold">₹{order.amount}</strong></span>
                       <span className="text-stone-400 text-[10px] block mt-0.5">{new Date(order.createdAt).toLocaleString()}</span>
                     </div>
 
-                    {order.status === "Paid" && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleOpenModal(order, "Cancelled")}
-                          className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
-                        >
-                          <XCircle className="w-3.5 h-3.5" /> Cancel Order
-                        </button>
-                        <button
-                          onClick={() => handleOpenModal(order, "Delivered")}
-                          className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5" /> Mark Delivered
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenModal(order, "Cancelled")}
+                        className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <XCircle className="w-3.5 h-3.5" /> Cancel Order
+                      </button>
+                      <button
+                        onClick={() => handleOpenModal(order, "Delivered")}
+                        className="px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl font-medium flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" /> Mark Delivered
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -231,7 +224,6 @@ export default function DeliveryPage() {
         </div>
       </div>
 
-      {/* OTP Verification Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-stone-950/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
           <div className="bg-white border border-stone-200 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-xl">
@@ -283,4 +275,3 @@ export default function DeliveryPage() {
     </div>
   );
 }
-

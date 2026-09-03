@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, AlertCircle, Clock, ArrowLeft } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Clock, ArrowLeft, PackageCheck } from "lucide-react";
 import Link from "next/link";
 
 export default function OrdersPage() {
@@ -109,6 +110,14 @@ export default function OrdersPage() {
                     </span>
                   </div>
 
+                  {/* Aesthetic Delivery Banner for Paid Orders */}
+                  {order.status === "Paid" && (
+                    <div className="flex items-center gap-2.5 bg-neutral-50 border border-neutral-100 rounded-2xl px-4 py-3 text-xs text-neutral-700">
+                      <PackageCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Estimated Delivery: <strong className="font-black text-neutral-900">3-7 working days</strong></span>
+                    </div>
+                  )}
+
                   <div className="space-y-3">
                     {order.products.map((p, idx) => (
                       <div key={idx} className="flex items-center gap-4">
@@ -147,3 +156,4 @@ export default function OrdersPage() {
     </div>
   );
 }
+
