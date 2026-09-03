@@ -74,17 +74,17 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex items-center justify-center p-4 text-white">
-      <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-3xl p-8 shadow-2xl">
+    <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center p-4 text-zinc-900">
+      <div className="w-full max-w-md bg-white border border-zinc-200/80 rounded-3xl p-8 shadow-2xl">
         <div className="flex items-center gap-2 mb-6">
-          <Sparkles className="w-5 h-5 text-yellow-400" />
-          <h1 className="text-base font-extrabold uppercase tracking-widest">
+          <Sparkles className="w-5 h-5 text-yellow-500" />
+          <h1 className="text-base font-extrabold uppercase tracking-widest text-zinc-900">
             {step === 1 ? "Sign In to Account" : "Enter Verification OTP"}
           </h1>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-xs font-medium">
+          <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-xs font-medium">
             {error}
           </div>
         )}
@@ -92,29 +92,29 @@ export default function SignInPage() {
         {step === 1 ? (
           <form onSubmit={handleSendOtp} className="space-y-4">
             <div>
-              <label className="block text-[11px] font-bold text-neutral-400 mb-1.5">Gmail Address (@gmail.com)</label>
+              <label className="block text-[11px] font-bold text-zinc-500 mb-1.5">Gmail Address (@gmail.com)</label>
               <input
                 type="email"
                 required
                 placeholder="name@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-2xl px-4 py-3 text-xs text-white focus:border-yellow-400 focus:outline-none"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-900 focus:border-yellow-400 focus:outline-none"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-neutral-950 font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+              className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-zinc-950 font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               <span>Get OTP & Sign In</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
-            <p className="text-center text-xs text-neutral-400 pt-2">
+            <p className="text-center text-xs text-zinc-500 pt-2">
               Don't have an account?{" "}
-              <Link href="/auth/signup" className="text-yellow-400 font-bold hover:underline">
+              <Link href="/auth/signup" className="text-yellow-600 font-bold hover:underline">
                 Sign Up
               </Link>
             </p>
@@ -122,7 +122,7 @@ export default function SignInPage() {
         ) : (
           <form onSubmit={handleVerifyAndLogin} className="space-y-4">
             <div>
-              <label className="block text-[11px] font-bold text-neutral-400 mb-1.5">Enter 6-digit OTP sent to {email}</label>
+              <label className="block text-[11px] font-bold text-zinc-500 mb-1.5">Enter 6-digit OTP sent to {email}</label>
               <input
                 type="text"
                 required
@@ -130,14 +130,14 @@ export default function SignInPage() {
                 placeholder="123456"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="w-full bg-neutral-800 border border-neutral-700 rounded-2xl px-4 py-3 text-xs text-white tracking-widest text-center focus:border-yellow-400 focus:outline-none"
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-900 tracking-widest text-center focus:border-yellow-400 focus:outline-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 text-neutral-950 font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
+              className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-zinc-950 font-bold text-xs rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               <span>Verify & Access Account</span>
