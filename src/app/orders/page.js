@@ -104,7 +104,7 @@ function OrdersContent() {
                     <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full ${
                       order.status === "Paid" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
                       order.status === "Failed" ? "bg-rose-50 text-rose-700 border border-rose-200" :
-                      "bg-amber-50 text-amber-700 border border-amber-200"
+                      "bg-yellow-400 text-zinc-950 border border-yellow-500 shadow-xs"
                     }`}>
                       {order.status === "Refund Initiated" ? "Refund Processing (3-5 Days)" : order.status}
                     </span>
