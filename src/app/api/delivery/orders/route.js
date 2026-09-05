@@ -3,7 +3,7 @@ import connectDB from "@/lib/db";
 import Order from "@/models/order";
 import User from "@/models/User";
 import DeliveryOtp from "@/models/DeliveryOtp";
-import AllowedIP from "@/models/AllowedIp"; // <-- Yeh ensure karein ki imported hai
+import AllowedIP from "@/models/AllowedIp";
 import nodemailer from "nodemailer";
 import mongoose from "mongoose";
 
@@ -18,8 +18,11 @@ const transporter = nodemailer.createTransport({
 async function verifyIP(req) {
   const forwarded = req.headers.get("x-forwarded-for");
   const realIp = req.headers.get("x-real-ip");
-  let clientIp = forwarded ? forwarded.split(",")[0].trim() : (realIp || "127.0.0.1");
-  if (clientIp === "::1" || clientIp === "::ffff:127.0.0.1") clientIp = "127.0.0.1";
+  let clientIp = forwarded ? forwarded.split(",")[0].trim() : (realIp || "");
+  
+  if (clientIp.startsWith("::ffff:")) {
+    clientIp = clientIp.replace("::ffff:", "");
+  }
 
   // Database se check karein ki clientIp 'AllowedIP' collection mein exist karti hai ya nahi
   try {
@@ -30,7 +33,7 @@ async function verifyIP(req) {
     return { isAllowed: true, clientIp };
   } catch (err) {
     console.error("[IP Verification Error]:", err);
-    return { isAllowed: false, clientIp }; // Error aane par security ke liye deny kar dein
+    return { isAllowed: false, clientIp };
   }
 }
 

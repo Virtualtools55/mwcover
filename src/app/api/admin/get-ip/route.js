@@ -1,4 +1,3 @@
-
 // app/api/admin/get-ip/route.js
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
@@ -9,17 +8,14 @@ export async function GET() {
     await connectDB();
     const setting = await AdminSettings.findOne();
     
-    // अगर डेटाबेस खाली है, तो कम से कम लोकलहोस्ट आईपी अलाउ रखें ताकि आप पहली बार सेटअप कर सकें
+    // अगर डेटाबेस खाली है, तो कोई भी आईपी अलाउ न करें (खाली अरे भेजें)
     if (!setting || !setting.allowedIps || setting.allowedIps.length === 0) {
-      return NextResponse.json({ success: true, allowedIps: ["127.0.0.1", "::1"] });
+      return NextResponse.json({ success: true, allowedIps: [] });
     }
 
     return NextResponse.json({ success: true, allowedIps: setting.allowedIps });
   } catch (err) {
-    // एरर आने पर भी डिफ़ॉल्ट रिटर्न करें ताकि मिडलवेयर ब्लॉक न करे
-    return NextResponse.json({ success: true, allowedIps: ["127.0.0.1", "::1"] });
+    // एरर आने पर भी खाली अरे भेजें ताकि बिना डेटाबेस एंट्री के कोई एक्सेस न पा सके
+    return NextResponse.json({ success: true, allowedIps: [] });
   }
 }
-
-
-
