@@ -122,14 +122,14 @@ function OrdersContent() {
                   {order.status === "Cancelled" && (
                     <div className="flex items-center gap-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-600">
                       <Ban className="w-4 h-4 text-zinc-500 shrink-0" />
-                      <span>This order was cancelled.</span>
+                      <span>This order was cancelled by you.</span>
                     </div>
                   )}
 
                   {order.status === "Refund Initiated" && (
                     <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs text-amber-800">
                       <RefreshCw className="w-4 h-4 text-amber-600 shrink-0 animate-spin" />
-                      <span>Refund is processing. Amount will be credited to your source account within <strong className="font-black text-amber-900">5-7 business days</strong>.</span>
+                      <span>Order cancelled by customer. Refund has been initiated to your original payment method and will reflect within <strong className="font-black text-amber-900">5-7 business days</strong>.</span>
                     </div>
                   )}
 
