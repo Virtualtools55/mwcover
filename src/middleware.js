@@ -12,7 +12,12 @@ export async function middleware(request) {
   // ================= 1. ADMIN IP RESTRICTION CHECK =================
   if (currentPath.startsWith("/admin") || currentPath.startsWith("/api/admin")) {
     const forwardedFor = request.headers.get("x-forwarded-for");
-    let clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : request.ip || "";
+    let clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : (request.ip || "");
+
+    // यदि लोकलहॉस्ट पर IP न मिले, तो डिफ़ॉल्ट रूप से 127.0.0.1 मान लें
+    if (!clientIp || clientIp === "localhost") {
+      clientIp = "127.0.0.1";
+    }
 
     // IPv4-mapped IPv6 एड्रेस को साफ करने के लिए (जैसे ::ffff:127.0.0.1 -> 127.0.0.1)
     if (clientIp.startsWith("::ffff:")) {
@@ -31,13 +36,14 @@ export async function middleware(request) {
       if (!allowedIpsFromDB.includes(clientIp)) {
         if (currentPath.startsWith("/api/")) {
           return NextResponse.json(
-            { success: false, error: "Access Denied: Unauthorized IP address." },
+            { success: false, error: `Access Denied: Unauthorized IP address (${clientIp}).` },
             { status: 403 }
           );
         }
         return NextResponse.redirect(new URL("/", request.url));
       }
     } catch (err) {
+      console.error("[Middleware IP Error]:", err);
       if (currentPath.startsWith("/api/")) {
         return NextResponse.json({ success: false, error: "Server IP verification failed." }, { status: 500 });
       }

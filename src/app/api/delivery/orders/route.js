@@ -24,7 +24,6 @@ async function verifyIP(req) {
     clientIp = clientIp.replace("::ffff:", "");
   }
 
-  // Database se check karein ki clientIp 'AllowedIP' collection mein exist karti hai ya nahi
   try {
     const allowedDoc = await AllowedIP.findOne({ ip: clientIp });
     if (!allowedDoc) {
@@ -46,7 +45,8 @@ export async function GET(req) {
       return NextResponse.json({ success: false, error: `Access Denied: IP (${clientIp}) not authorized.` }, { status: 403 });
     }
 
-    const orders = await Order.find({}).sort({ createdAt: -1 }).lean();
+    // केवल वही ऑर्डर्स फेच करें जिनका स्टेटस "Paid" है
+    const orders = await Order.find({ status: "Paid" }).sort({ createdAt: -1 }).lean();
 
     for (let order of orders) {
       if (order.userId) {

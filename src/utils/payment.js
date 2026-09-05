@@ -27,7 +27,7 @@ export async function startRazorpayPayment({ products, amount, router }) {
     }
 
     const options = {
-      key: process.env.RAZORPAY_KEY_ID,
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       amount: data.order.amount,
       currency: "INR",
       name: "Kairi.in",

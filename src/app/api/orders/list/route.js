@@ -20,8 +20,11 @@ export async function GET(request) {
 
     await connectDB();
 
-    // 2. केवल उसी यूजर के ऑर्डर्स फेच करें जो लॉगिन है
-    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+    // 2. केवल उसी यूजर के ऑर्डर्स फेच करें जिनका स्टेटस "Paid" है
+    const orders = await Order.find({ 
+      userId, 
+      status: "Paid" // <-- यहाँ paymentStatus की जगह status कर दिया गया है
+    }).sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, orders }, { status: 200 });
   } catch (err) {

@@ -2,7 +2,7 @@
 import mongoose from "mongoose";
 
 const AdminSettingsSchema = new mongoose.Schema({
-  allowedIp: { type: String, required: true, unique: true },
+  allowedIps: { type: [String], default: [] }, // यहाँ allowedIp की जगह allowedIps (Array) कर दिया है
 }, { timestamps: true });
 
 export default mongoose.models.AdminSettings || mongoose.model("AdminSettings", AdminSettingsSchema);
