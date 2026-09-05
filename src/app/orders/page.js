@@ -3,7 +3,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, AlertCircle, Clock, ArrowLeft, PackageCheck } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Clock, ArrowLeft, PackageCheck, Ban, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 function OrdersContent() {
@@ -32,7 +32,7 @@ function OrdersContent() {
   }, []);
 
   const handleCancelOrder = async (orderId) => {
-    if (!confirm("Are you sure you want to cancel this order? Refund will take 3-5 working days.")) return;
+    if (!confirm("Are you sure you want to cancel this order? Refund will take 5-7 business days.")) return;
     setActionLoading(orderId);
     try {
       const res = await fetch("/api/orders/cancel", {
@@ -104,9 +104,11 @@ function OrdersContent() {
                     <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full ${
                       order.status === "Paid" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
                       order.status === "Failed" ? "bg-rose-50 text-rose-700 border border-rose-200" :
+                      order.status === "Cancelled" ? "bg-zinc-100 text-zinc-700 border border-zinc-300" :
+                      order.status === "Refund Initiated" ? "bg-amber-50 text-amber-700 border border-amber-200" :
                       "bg-yellow-400 text-zinc-950 border border-yellow-500 shadow-xs"
                     }`}>
-                      {order.status === "Refund Initiated" ? "Refund Processing (3-5 Days)" : order.status}
+                      {order.status === "Refund Initiated" ? "Refund Processing" : order.status}
                     </span>
                   </div>
 
@@ -114,6 +116,20 @@ function OrdersContent() {
                     <div className="flex items-center gap-2.5 bg-neutral-50 border border-neutral-100 rounded-2xl px-4 py-3 text-xs text-neutral-700">
                       <PackageCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span>Estimated Delivery: <strong className="font-black text-neutral-900">3-7 working days</strong></span>
+                    </div>
+                  )}
+
+                  {order.status === "Cancelled" && (
+                    <div className="flex items-center gap-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-600">
+                      <Ban className="w-4 h-4 text-zinc-500 shrink-0" />
+                      <span>This order was cancelled.</span>
+                    </div>
+                  )}
+
+                  {order.status === "Refund Initiated" && (
+                    <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs text-amber-800">
+                      <RefreshCw className="w-4 h-4 text-amber-600 shrink-0 animate-spin" />
+                      <span>Refund is processing. Amount will be credited to your source account within <strong className="font-black text-amber-900">5-7 business days</strong>.</span>
                     </div>
                   )}
 
