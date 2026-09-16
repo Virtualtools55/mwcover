@@ -8,14 +8,14 @@ export async function GET() {
     await connectDB();
     const setting = await AdminSettings.findOne();
     
-    // अगर डेटाबेस खाली है, तो कोई भी आईपी अलाउ न करें (खाली अरे भेजें)
+    // अगर डेटाबेस खाली है, तो खाली अरे भेजें
     if (!setting || !setting.allowedIps || setting.allowedIps.length === 0) {
       return NextResponse.json({ success: true, allowedIps: [] });
     }
 
     return NextResponse.json({ success: true, allowedIps: setting.allowedIps });
   } catch (err) {
-    // एरर आने पर भी खाली अरे भेजें ताकि बिना डेटाबेस एंट्री के कोई एक्सेस न पा सके
-    return NextResponse.json({ success: true, allowedIps: [] });
+    console.error("[Get IP API Error]:", err);
+    return NextResponse.json({ success: false, allowedIps: [], error: "Failed to fetch IPs" }, { status: 500 });
   }
 }
