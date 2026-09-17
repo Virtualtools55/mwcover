@@ -1,14 +1,31 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
 import AddProductForm from "@/app/components/AddProductsForm/AddProductsForm";
 import Link from "next/link";
-import { LayoutDashboard, PlusCircle, LogOut, Trash2, Package, Mail, Save, Phone, Clock, MapPin } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  PlusCircle, 
+  LogOut, 
+  Trash2, 
+  Package, 
+  Mail, 
+  Save, 
+  Phone, 
+  Clock, 
+  MapPin, 
+  CheckCircle2, 
+  AlertCircle 
+} from "lucide-react";
 
 export default function AdminDashboardPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Notification Toast State (replaces blocking alerts)
+  const [notification, setNotification] = useState(null); // { message: "", type: "success" | "error" }
+
   // Contact settings state
   const [contactForm, setContactForm] = useState({
     email: "",
@@ -18,6 +35,13 @@ export default function AdminDashboardPage() {
   });
   const [currentContact, setCurrentContact] = useState(null);
   const [savingContact, setSavingContact] = useState(false);
+
+  const showToast = (message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3500);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -31,6 +55,11 @@ export default function AdminDashboardPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleProductAdded = () => {
+    fetchProducts();
+    showToast("Mobile cover added successfully!");
   };
 
   const fetchContactSettings = async () => {
@@ -69,11 +98,13 @@ export default function AdminDashboardPage() {
 
       if (data.success) {
         setProducts((prev) => prev.filter((product) => product._id !== id));
+        showToast("Mobile cover deleted successfully!");
       } else {
-        alert("Failed to delete product: " + data.error);
+        showToast("Failed to delete product: " + data.error, "error");
       }
     } catch (error) {
       console.error("Error deleting product:", error);
+      showToast("Error deleting product.", "error");
     }
   };
 
@@ -88,13 +119,14 @@ export default function AdminDashboardPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert("Contact details updated successfully!");
+        showToast("Contact details updated successfully!");
         fetchContactSettings();
       } else {
-        alert("Failed to update: " + data.error);
+        showToast("Failed to update: " + data.error, "error");
       }
     } catch (err) {
       console.error("Error saving contact info", err);
+      showToast("Error saving contact info.", "error");
     } finally {
       setSavingContact(false);
     }
@@ -111,17 +143,37 @@ export default function AdminDashboardPage() {
       if (data.success) {
         setCurrentContact(null);
         setContactForm({ email: "", phone: "", workingHours: "", location: "" });
-        alert("Contact details deleted successfully!");
+        showToast("Contact details deleted successfully!");
       } else {
-        alert("Failed to delete: " + data.error);
+        showToast("Failed to delete: " + data.error, "error");
       }
     } catch (err) {
       console.error("Error deleting contact settings", err);
+      showToast("Error deleting contact settings.", "error");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0B] text-white flex flex-col">
+    <div className="min-h-screen bg-[#0B0B0B] text-white flex flex-col relative">
+      
+      {/* Floating Auto-Hiding Toast Notification Popup */}
+      {notification && (
+        <div className="fixed top-6 right-6 z-50 animate-bounce">
+          <div className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs font-semibold ${
+            notification.type === "error" 
+              ? "bg-rose-950/90 border-rose-800 text-rose-200" 
+              : "bg-neutral-900 border-yellow-500/50 text-white"
+          }`}>
+            {notification.type === "error" ? (
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-yellow-400 shrink-0" />
+            )}
+            <span>{notification.message}</span>
+          </div>
+        </div>
+      )}
+
       <header className="w-full bg-[#121212] border-b border-neutral-800 px-8 py-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-yellow-400 text-neutral-900 rounded-xl font-bold">
@@ -150,7 +202,7 @@ export default function AdminDashboardPage() {
               <PlusCircle className="w-5 h-5 text-yellow-400" />
               <h2 className="text-lg font-bold text-white">Add New Mobile Cover</h2>
             </div>
-            <AddProductForm onProductAdded={fetchProducts} />
+            <AddProductForm onProductAdded={handleProductAdded} />
           </div>
 
           <div className="lg:col-span-7 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl">
@@ -299,7 +351,7 @@ export default function AdminDashboardPage() {
               <button
                 type="submit"
                 disabled={savingContact}
-                className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-neutral-950 font-bold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-yellow-400/20 disabled:opacity-50 text-sm"
+                className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-500 text-neutral-950 font-bold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-yellow-400/20 disabled:opacity-50 text-sm cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 <span>{savingContact ? "Saving..." : "Save Contact Info"}</span>
@@ -311,3 +363,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+
