@@ -78,7 +78,7 @@ export default function Navbar() {
           <img 
             src="/caseologo.png" 
             alt="Caseo Logo" 
-            className="h-7 w-auto object-contain"
+            className="h-10 w-auto object-contain"
           />
         </Link>
 
