@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="space-y-3 md:col-span-1">
           <Link href="/" className="inline-block group">
             <img 
-              c 
+              src="/caseologo.png" 
               alt="Caseo Logo" 
               className="h-7 w-auto object-contain transition-transform group-hover:scale-105"
             />
