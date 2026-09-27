@@ -1,4 +1,3 @@
-// app/components/Navbar.jsx
 "use client";
 
 import Link from "next/link";
@@ -32,8 +31,14 @@ export default function Navbar() {
     <>
       {/* ================= DESKTOP NAVBAR ================= */}
       <header className="hidden md:flex sticky top-0 z-50 w-full bg-[#0B0B0B] backdrop-blur-xl border-b border-zinc-800 px-10 py-4 items-center justify-between transition-all shadow-md">
-        <Link href="/" className="text-xl font-serif font-bold tracking-tight text-white flex items-center gap-1.5 group">
-          <span>MWCover</span>
+        
+        {/* Logo Image Adjustment */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <img 
+            src="/caseo logo yellow-edited.png" 
+            alt="Caseo Logo" 
+            className="h-13 w-auto object-contain transition-transform group-hover:scale-105"
+          />
         </Link>
 
         {/* Menu Links with Yellow Hover/Active Pill and Black Text */}
@@ -65,10 +70,16 @@ export default function Navbar() {
         </Link>
       </header>
 
-      {/* ================= MOBILE TOP HEADER (ONLY BRAND NAME & BAG ICON) ================= */}
+      {/* ================= MOBILE TOP HEADER (ONLY LOGO & BAG ICON) ================= */}
       <header className="md:hidden sticky top-0 z-45 w-full bg-[#0B0B0B]/95 backdrop-blur-xl border-b border-neutral-800 px-5 py-3.5 flex items-center justify-between shadow-lg">
-        <Link href="/" className="text-lg font-serif font-bold tracking-tight text-white flex items-center gap-1.5 group">
-          <span>MWCover</span>
+        
+        {/* Logo Image Adjustment */}
+        <Link href="/" className="flex items-center gap-2">
+          <img 
+            src="/logo.png" 
+            alt="Caseo Logo" 
+            className="h-7 w-auto object-contain"
+          />
         </Link>
 
         <Link

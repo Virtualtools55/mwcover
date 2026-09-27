@@ -1,4 +1,3 @@
-// components/Footer.jsx
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
@@ -6,10 +5,16 @@ export default function Footer() {
   return (
     <footer className="bg-black border-t border-neutral-900 text-white py-12 px-6 md:px-12">
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-neutral-900">
+        
+        {/* Logo and Tagline Section */}
         <div className="space-y-3 md:col-span-1">
-          <div className="flex items-center gap-2">
-            <span className="font-serif font-bold text-lg tracking-tight text-white">MWCover</span>
-          </div>
+          <Link href="/" className="inline-block group">
+            <img 
+              src="/caseo logo yellow-edited.png" 
+              alt="Caseo Logo" 
+              className="h-7 w-auto object-contain transition-transform group-hover:scale-105"
+            />
+          </Link>
           <p className="text-xs text-neutral-400 leading-relaxed">
             High-contrast, shock-proof aesthetic mobile covers designed for your everyday carry.
           </p>
@@ -46,7 +51,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-5xl mx-auto pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-neutral-500 gap-2">
-        <p>&copy; {new Date().getFullYear()} MWCover. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Caseo. All rights reserved.</p>
       </div>
     </footer>
   );
