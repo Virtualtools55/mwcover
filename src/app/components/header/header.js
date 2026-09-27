@@ -37,7 +37,7 @@ export default function Navbar() {
           <img 
             src="/caseo logo yellow-edited.png" 
             alt="Caseo Logo" 
-            className="h-13 w-auto object-contain transition-transform group-hover:scale-105"
+            className="h-12 w-auto object-contain transition-transform group-hover:scale-105"
           />
         </Link>
 
