@@ -76,7 +76,7 @@ export default function Navbar() {
         {/* Logo Image Adjustment */}
         <Link href="/" className="flex items-center gap-2">
           <img 
-            src="/logo.png" 
+            src="/caseologo.png" 
             alt="Caseo Logo" 
             className="h-7 w-auto object-contain"
           />
