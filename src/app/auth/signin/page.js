@@ -96,7 +96,7 @@ export default function SignInPage() {
               <input
                 type="email"
                 required
-                placeholder="name@gmail.com"
+                
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-900 focus:border-yellow-400 focus:outline-none"
