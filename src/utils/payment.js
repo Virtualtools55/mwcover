@@ -30,7 +30,7 @@ export async function startRazorpayPayment({ products, amount, router }) {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       amount: data.order.amount,
       currency: "INR",
-      name: "Kairi.in",
+      name: "Caseo.in",
       description: "Secure Luxury Checkout",
       order_id: data.order.id,
       handler: async function (response) {

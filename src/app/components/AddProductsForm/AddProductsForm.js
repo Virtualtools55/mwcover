@@ -5,6 +5,7 @@ import { Upload, Loader2 } from "lucide-react";
 
 export default function AddProductForm({ onProductAdded }) {
   const [title, setTitle] = useState("");
+  const [originalPrice, setOriginalPrice] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,7 @@ export default function AddProductForm({ onProductAdded }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !price || !image) {
+    if (!title || !originalPrice || !price || !image) {
       setMessage("Please fill out all fields.");
       return;
     }
@@ -23,6 +24,7 @@ export default function AddProductForm({ onProductAdded }) {
     try {
       const formData = new FormData();
       formData.append("title", title);
+      formData.append("originalPrice", originalPrice);
       formData.append("price", price);
       formData.append("image", image);
 
@@ -36,6 +38,7 @@ export default function AddProductForm({ onProductAdded }) {
       if (data.success) {
         setMessage("Product added successfully!");
         setTitle("");
+        setOriginalPrice("");
         setPrice("");
         setImage(null);
         e.target.reset();
@@ -74,18 +77,35 @@ export default function AddProductForm({ onProductAdded }) {
           />
         </div>
 
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5">
-            Price (₹)
-          </label>
-          <input
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            placeholder="499"
-            className="w-full px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:border-yellow-400 text-sm transition-colors"
-            required
-          />
+        {/* Dual Pricing Inputs Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-400 mb-1.5 line-through">
+              Original MRP (₹)
+            </label>
+            <input
+              type="number"
+              value={originalPrice}
+              onChange={(e) => setOriginalPrice(e.target.value)}
+              placeholder="999"
+              className="w-full px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:border-yellow-400 text-sm transition-colors"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-yellow-400 mb-1.5">
+              Selling Price (₹)
+            </label>
+            <input
+              type="number"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder="499"
+              className="w-full px-4 py-3 rounded-xl bg-neutral-900 border border-neutral-700 text-white placeholder-neutral-500 focus:outline-none focus:border-yellow-400 text-sm transition-colors"
+              required
+            />
+          </div>
         </div>
 
         <div>

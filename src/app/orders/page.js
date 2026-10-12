@@ -2,26 +2,45 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, AlertCircle, Clock, ArrowLeft, PackageCheck, Ban, RefreshCw } from "lucide-react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { Loader2, CheckCircle2, AlertCircle, Clock, ArrowLeft, PackageCheck, Ban, RefreshCw, CheckCircle2 as CheckDone, Clock3, Package } from "lucide-react";
 import Link from "next/link";
 
 function OrdersContent() {
   const searchParams = useSearchParams();
-  const isSuccess = searchParams.get("success");
-  const isFailed = searchParams.get("failed");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const isSuccessParam = searchParams.get("success");
+  const isFailedParam = searchParams.get("failed");
+
+  const [showSuccessBanner, setShowSuccessBanner] = useState(Boolean(isSuccessParam));
+  const [showFailedBanner, setShowFailedBanner] = useState(Boolean(isFailedParam));
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
 
+  useEffect(() => {
+    if (isSuccessParam || isFailedParam) {
+      const timer = setTimeout(() => {
+        setShowSuccessBanner(false);
+        setShowFailedBanner(false);
+        router.replace(pathname, { scroll: false });
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccessParam, isFailedParam, router, pathname]);
+
   const fetchOrders = async () => {
     try {
       const res = await fetch("/api/orders/list");
       const json = await res.json();
-      if (json.success) setOrders(json.orders);
+      if (json.success) {
+        setOrders(json.orders || []);
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch orders:", err);
     } finally {
       setLoading(false);
     }
@@ -45,7 +64,7 @@ function OrdersContent() {
         alert(json.message);
         fetchOrders();
       } else {
-        alert(json.error);
+        alert(json.error || "Failed to cancel order.");
       }
     } catch (err) {
       alert("Failed to process cancellation request.");
@@ -56,41 +75,54 @@ function OrdersContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-neutral-900" />
+      <div className="min-h-screen bg-[#F9F9FB] flex items-center justify-center text-black">
+        <Loader2 className="w-8 h-8 animate-spin text-[#FFC700]" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <Link href="/" className="flex items-center gap-2 text-xs font-bold text-neutral-600 bg-white px-4 py-2 rounded-2xl border border-neutral-200 shadow-sm">
-            <ArrowLeft className="w-4 h-4" />
+    <div className="min-h-screen bg-[#F9F9FB] text-stone-900 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+        
+        {/* Header matching Caseo Navbar & Store style */}
+        <div className="flex items-center justify-between bg-white p-4 sm:p-5 rounded-2xl border border-stone-200/80 shadow-xs">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 text-xs font-bold text-stone-900 bg-stone-100 hover:bg-stone-200 px-4 py-2.5 rounded-xl transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 text-stone-900" />
             <span>Store</span>
           </Link>
-          <h1 className="text-lg font-black text-neutral-900">Your Orders</h1>
+          
+          <div className="text-right">
+            <h1 className="text-lg font-black tracking-tight text-stone-900">Your Orders</h1>
+            <p className="text-[10px] text-stone-500 font-mono">केसियो • Carry Your Vibe</p>
+          </div>
         </div>
 
-        {isSuccess && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-800 text-xs font-bold shadow-sm">
+        {/* Success Alert Banner */}
+        {showSuccessBanner && (
+          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3 text-emerald-800 text-xs font-bold shadow-xs">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <span>Payment successful! Your order has been placed securely.</span>
           </div>
         )}
 
-        {isFailed && (
-          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold shadow-sm">
+        {/* Failed Alert Banner */}
+        {showFailedBanner && (
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold shadow-xs">
             <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
             <span>Payment failed or dropped. Order marked as unsuccessful.</span>
           </div>
         )}
 
+        {/* Orders List */}
         <div className="space-y-4">
           {orders.length === 0 ? (
-            <div className="bg-white rounded-3xl p-10 text-center border border-neutral-200">
-              <p className="text-xs font-bold text-neutral-500">No previous orders found.</p>
+            <div className="bg-white rounded-2xl p-12 text-center border border-stone-200/80 shadow-xs space-y-3">
+              <Package className="w-10 h-10 text-stone-300 mx-auto" />
+              <p className="text-xs font-bold text-stone-500">No previous orders found.</p>
             </div>
           ) : (
             orders.map((order) => {
@@ -98,66 +130,96 @@ function OrdersContent() {
               const canCancel = order.status === "Paid" && minutesElapsed <= 30;
 
               return (
-                <div key={order._id} className="bg-white rounded-3xl border border-neutral-200 p-5 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-                    <span className="text-[10px] font-mono text-neutral-400">ID: {order._id}</span>
-                    <span className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full ${
-                      order.status === "Paid" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
-                      order.status === "Failed" ? "bg-rose-50 text-rose-700 border border-rose-200" :
-                      order.status === "Cancelled" ? "bg-zinc-100 text-zinc-700 border border-zinc-300" :
-                      order.status === "Refund Initiated" ? "bg-amber-50 text-amber-700 border border-amber-200" :
-                      "bg-yellow-400 text-zinc-950 border border-yellow-500 shadow-xs"
+                <div key={order._id} className="bg-white rounded-2xl border border-stone-200/80 p-5 sm:p-6 shadow-xs space-y-4 transition-all hover:shadow-sm">
+                  
+                  {/* Order Reference ID & Caseo Status Badges */}
+                  <div className="flex items-center justify-between border-b border-stone-100 pb-3.5">
+                    <div>
+                      <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block">Order ID</span>
+                      <span className="text-xs font-mono font-bold text-stone-800">#{order._id}</span>
+                    </div>
+
+                    {/* STRICT COLOR LOGIC: Delivered = Green, Failed = Red, Paid/Pending = Caseo Yellow */}
+                    <span className={`text-[10px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full ${
+                      order.status === "Delivered" ? "bg-emerald-600 text-white" :
+                      order.status === "Failed" ? "bg-rose-600 text-white" :
+                      order.status === "Paid" || order.status === "Pending" ? "bg-[#FFC700] text-black font-extrabold" :
+                      "bg-stone-900 text-white"
                     }`}>
                       {order.status === "Refund Initiated" ? "Refund Processing" : order.status}
                     </span>
                   </div>
 
-                  {order.status === "Paid" && (
-                    <div className="flex items-center gap-2.5 bg-neutral-50 border border-neutral-100 rounded-2xl px-4 py-3 text-xs text-neutral-700">
-                      <PackageCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Estimated Delivery: <strong className="font-black text-neutral-900">3-7 working days</strong></span>
+                  {/* Context Banners inside card */}
+                  {(order.status === "Paid" || order.status === "Pending") && (
+                    <div className="flex items-center gap-2.5 bg-amber-50/60 border border-amber-200/60 rounded-xl px-4 py-3 text-xs text-amber-900">
+                      <PackageCheck className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>Estimated Delivery: <strong className="font-bold text-stone-900">3-7 working days</strong></span>
+                    </div>
+                  )}
+
+                  {order.status === "Delivered" && (
+                    <div className="flex items-center gap-2.5 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-xs text-emerald-800">
+                      <CheckDone className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Successfully delivered to your address. Enjoy your Caseo cover!</span>
                     </div>
                   )}
 
                   {order.status === "Cancelled" && (
-                    <div className="flex items-center gap-2.5 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-600">
-                      <Ban className="w-4 h-4 text-zinc-500 shrink-0" />
+                    <div className="flex items-center gap-2.5 bg-stone-100 border border-stone-200 rounded-xl px-4 py-3 text-xs text-stone-600">
+                      <Ban className="w-4 h-4 text-stone-500 shrink-0" />
                       <span>This order was cancelled by you.</span>
                     </div>
                   )}
 
-                  {order.status === "Refund Initiated" && (
-                    <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-xs text-amber-800">
-                      <RefreshCw className="w-4 h-4 text-amber-600 shrink-0 animate-spin" />
-                      <span>Order cancelled by customer. Refund has been initiated to your original payment method and will reflect within <strong className="font-black text-amber-900">5-7 business days</strong>.</span>
+                  {order.status === "Failed" && (
+                    <div className="flex items-center gap-2.5 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-xs text-rose-700">
+                      <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                      <span>Payment was unsuccessful or session expired.</span>
                     </div>
                   )}
 
+                  {order.status === "Refund Initiated" && (
+                    <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800">
+                      <RefreshCw className="w-4 h-4 text-amber-600 shrink-0 animate-spin" />
+                      <span>Order cancelled. Refund initiated to your original payment method within <strong className="font-bold text-stone-900">5-7 business days</strong>.</span>
+                    </div>
+                  )}
+
+                  {/* Products Grid / List */}
                   <div className="space-y-3">
-                    {order.products.map((p, idx) => (
-                      <div key={idx} className="flex items-center gap-4">
-                        <img src={p.imageUrl} alt={p.title} className="w-14 h-14 object-contain rounded-xl bg-neutral-50 border border-neutral-100 p-1" />
-                        <div className="flex-1">
-                          <h3 className="text-xs font-bold text-neutral-900 line-clamp-1">{p.title}</h3>
-                          <p className="text-xs font-black text-neutral-700 mt-0.5">₹{p.price}</p>
+                    {order.products?.map((p, idx) => (
+                      <div key={idx} className="flex items-center gap-4 bg-stone-50/70 p-3 rounded-xl border border-stone-200/60">
+                        <img 
+                          src={p.imageUrl} 
+                          alt={p.title || "Product"} 
+                          className="w-14 h-14 object-cover rounded-lg bg-white border border-stone-200 shrink-0" 
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-xs font-bold text-stone-900 truncate">{p.title}</h3>
+                          <p className="text-[11px] text-stone-500 mt-0.5">Quantity: <span className="font-bold text-stone-900">{p.quantity || 1}</span></p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-black text-stone-900">₹{p.price * (p.quantity || 1)}</span>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
-                    <div className="flex items-center gap-1.5 text-[10px] text-neutral-400 font-semibold">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{new Date(order.createdAt).toLocaleString()}</span>
+                  {/* Footer Timestamp & Action Button */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-3 border-t border-stone-100 gap-3">
+                    <div className="flex items-center gap-1.5 text-[11px] text-stone-400 font-medium">
+                      <Clock className="w-3.5 h-3.5 text-stone-400" />
+                      <span>Placed on: {new Date(order.createdAt).toLocaleString()}</span>
                     </div>
 
                     {canCancel && (
                       <button
                         onClick={() => handleCancelOrder(order._id)}
                         disabled={actionLoading === order._id}
-                        className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
+                        className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs active:scale-95"
                       >
-                        {actionLoading === order._id && <Loader2 className="w-3 h-3 animate-spin" />}
+                        {actionLoading === order._id && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                         <span>Cancel Order (30m window)</span>
                       </button>
                     )}
@@ -175,8 +237,8 @@ function OrdersContent() {
 export default function OrdersPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-neutral-900" />
+      <div className="min-h-screen bg-[#F9F9FB] flex items-center justify-center text-stone-900">
+        <Loader2 className="w-8 h-8 animate-spin text-[#FFC700]" />
       </div>
     }>
       <OrdersContent />

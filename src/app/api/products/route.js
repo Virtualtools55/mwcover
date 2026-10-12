@@ -16,12 +16,13 @@ export async function POST(request) {
 
     const formData = await request.formData();
     const title = formData.get("title");
+    const originalPrice = formData.get("originalPrice");
     const price = formData.get("price");
     const file = formData.get("image");
 
-    if (!title || !price || !file) {
+    if (!title || !originalPrice || !price || !file) {
       return NextResponse.json(
-        { success: false, error: "All fields (title, price, image) are required." },
+        { success: false, error: "All fields (title, originalPrice, price, image) are required." },
         { status: 400 }
       );
     }
@@ -30,16 +31,17 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload image to ImageKit (you can specify a folder like "ecommerce-products")
+    // Upload image to ImageKit
     const uploadResponse = await imagekit.upload({
       file: buffer,
       fileName: `${Date.now()}-${file.name}`,
       folder: "/ecommerce-products",
     });
 
-    // Save product data along with ImageKit URL to MongoDB
+    // Save product data including both original and selling prices to MongoDB
     const newProduct = await Product.create({
       title,
+      originalPrice: Number(originalPrice),
       price: Number(price),
       imageUrl: uploadResponse.url,
       imageFileId: uploadResponse.fileId,

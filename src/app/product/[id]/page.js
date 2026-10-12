@@ -105,10 +105,19 @@ export default function ProductDetailPage() {
               <h1 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-900 mb-3">
                 {product.title}
               </h1>
+              
+              {/* Pricing Section: Original Price (Strikethrough) first, then Selling Price */}
               <div className="flex items-baseline gap-3 mb-4">
-                <span className="text-2xl font-black text-neutral-900">₹{product.price}</span>
-                <span className="text-sm font-semibold text-neutral-400 line-through">₹{product.price + 300}</span>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span className="text-base font-semibold text-neutral-400 line-through">
+                    ₹{product.originalPrice}
+                  </span>
+                )}
+                <span className="text-2xl font-black text-neutral-900">
+                  ₹{product.price}
+                </span>
               </div>
+
               <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed font-medium mb-6">
                 {product.description || "Premium quality build designed for everyday durability and luxury styling."}
               </p>

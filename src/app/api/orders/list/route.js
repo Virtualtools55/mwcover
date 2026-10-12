@@ -12,7 +12,7 @@ export async function GET(request) {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.userId;
+    const userId = decoded.userId || decoded.id || decoded.email;
 
     if (!userId) {
       return NextResponse.json({ success: false, error: "Invalid token structure." }, { status: 401 });
@@ -20,11 +20,8 @@ export async function GET(request) {
 
     await connectDB();
 
-    // 2. केवल उसी यूजर के ऑर्डर्स फेच करें जिनका स्टेटस "Paid" है
-    const orders = await Order.find({ 
-      userId, 
-      status: "Paid" // <-- यहाँ paymentStatus की जगह status कर दिया गया है
-    }).sort({ createdAt: -1 });
+    // 2. Sirf userId ke basis par saare orders fetch karein (Status filter hata diya gaya hai)
+    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
 
     return NextResponse.json({ success: true, orders }, { status: 200 });
   } catch (err) {
