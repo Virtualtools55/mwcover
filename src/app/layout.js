@@ -16,11 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Caseo - Carry Your Vibe",
   description: "Shop premium mobile covers and accessories at Caseo.",
-  
-    icons: {
-    icon: "/caseofav.ico", // ya "/logo.png"
+  icons: {
+    icon: "/favicon.ico",
   },
-  
 };
 
 export default function RootLayout({ children }) {
@@ -31,7 +29,6 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col">
         <Navbar />
-
         {children}
         <Footer />
       </body>
