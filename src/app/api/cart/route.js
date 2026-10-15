@@ -1,10 +1,9 @@
-// app/api/cart/route.js
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import Cart from "@/models/Cart";
 
-// Helper function to get userId from Cookie token
+// Helper function to extract userId from JWT cookie
 function getUserIdFromToken(request) {
   try {
     const token = request.cookies.get("token")?.value;
@@ -17,12 +16,15 @@ function getUserIdFromToken(request) {
   }
 }
 
-// GET: Fetch cart items strictly for the logged-in user
+// GET: Fetch cart items for the authenticated user
 export async function GET(request) {
   try {
     const userId = getUserIdFromToken(request);
     if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized. Please login first." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized. Please login first." },
+        { status: 401 }
+      );
     }
 
     await connectDB();
@@ -33,25 +35,45 @@ export async function GET(request) {
   }
 }
 
-// POST: Create a new cart entry only if the user is authenticated
+// POST: Add or update cart item
 export async function POST(request) {
   try {
     const userId = getUserIdFromToken(request);
     if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized. Please login first." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized. Please login first." },
+        { status: 401 }
+      );
     }
 
     await connectDB();
-    const { productId, title, price, imageUrl } = await request.json();
+    const { productId, title, price, imageUrl, quantity = 1 } = await request.json();
 
-    // Create new item linked to the logged-in user's ID instead of "guest"
+    if (!productId) {
+      return NextResponse.json(
+        { success: false, error: "Product ID is required." },
+        { status: 400 }
+      );
+    }
+
+    // Check if the product already exists in user's cart
+    const existingItem = await Cart.findOne({ userId, productId });
+
+    if (existingItem) {
+      // Increment quantity if item already exists
+      existingItem.quantity += Number(quantity) || 1;
+      await existingItem.save();
+      return NextResponse.json({ success: true, data: existingItem }, { status: 200 });
+    }
+
+    // Create new cart entry if item does not exist
     const newItem = await Cart.create({
       userId,
       productId,
       title,
-      price,
+      price: Number(price) || 0,
       imageUrl,
-      quantity: 1,
+      quantity: Number(quantity) || 1,
     });
 
     return NextResponse.json({ success: true, data: newItem }, { status: 200 });
@@ -60,22 +82,34 @@ export async function POST(request) {
   }
 }
 
-// DELETE: Remove specific item row ensuring it belongs to the logged-in user
+// DELETE: Remove specific cart item belonging to the user
 export async function DELETE(request) {
   try {
     const userId = getUserIdFromToken(request);
     if (!userId) {
-      return NextResponse.json({ success: false, error: "Unauthorized. Please login first." }, { status: 401 });
+      return NextResponse.json(
+        { success: false, error: "Unauthorized. Please login first." },
+        { status: 401 }
+      );
     }
 
     await connectDB();
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    // Delete item only if it matches the item ID and belongs to this user
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Item ID parameter is missing." },
+        { status: 400 }
+      );
+    }
+
     await Cart.findOneAndDelete({ _id: id, userId });
-    
-    return NextResponse.json({ success: true, message: "Item removed" }, { status: 200 });
+
+    return NextResponse.json(
+      { success: true, message: "Item removed successfully." },
+      { status: 200 }
+    );
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

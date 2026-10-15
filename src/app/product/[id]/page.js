@@ -3,8 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, ShieldCheck, Truck, Zap } from "lucide-react";
-import { startRazorpayPayment } from "@/utils/payment";
+import { Loader2, ArrowLeft, ShieldCheck, Truck, ShoppingBag, CheckCircle2 } from "lucide-react";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -14,6 +13,8 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: "" });
 
   useEffect(() => {
     async function fetchProductDetails() {
@@ -42,20 +43,49 @@ export default function ProductDetailPage() {
     if (id) fetchProductDetails();
   }, [id]);
 
-  const handleCheckout = () => {
-    startRazorpayPayment({
-      products: [
-        {
+  const showToast = (message) => {
+    setToast({ show: true, message });
+    setTimeout(() => {
+      setToast({ show: false, message: "" });
+    }, 2500);
+  };
+
+  const handleAddToCart = async () => {
+    if (!product) return;
+    setAdding(true);
+
+    try {
+      const res = await fetch("/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           productId: product._id,
           title: product.title,
-          price: product.price,
+          price: Number(product.price) || 0,
           imageUrl: product.imageUrl,
           quantity: 1,
-        },
-      ],
-      amount: product.price,
-      router,
-    });
+        }),
+      });
+
+      if (res.status === 401) {
+        router.push("/auth/signin");
+        return;
+      }
+
+      const json = await res.json();
+      if (json.success) {
+        showToast(`${product.title} ✨ Added to cart successfully!`);
+      } else {
+        showToast(json.error || "Failed to add product to cart.");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      showToast("Something went wrong. Try again.");
+    } finally {
+      setAdding(false);
+    }
   };
 
   if (loading) {
@@ -82,7 +112,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8 relative">
       <div className="max-w-4xl mx-auto">
         <button
           onClick={() => router.back()}
@@ -106,7 +136,6 @@ export default function ProductDetailPage() {
                 {product.title}
               </h1>
               
-              {/* Pricing Section: Original Price (Strikethrough) first, then Selling Price */}
               <div className="flex items-baseline gap-3 mb-4">
                 {product.originalPrice && product.originalPrice > product.price && (
                   <span className="text-base font-semibold text-neutral-400 line-through">
@@ -135,13 +164,38 @@ export default function ProductDetailPage() {
             </div>
 
             <button
-              onClick={handleCheckout}
-              className="w-full py-4 bg-neutral-900 hover:bg-neutral-800 text-white font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer"
+              onClick={handleAddToCart}
+              disabled={adding}
+              className="w-full py-4 bg-neutral-900 hover:bg-neutral-800 text-white font-black text-xs sm:text-sm rounded-2xl flex items-center justify-center gap-2 transition-all shadow-lg cursor-pointer disabled:opacity-50"
             >
-              <Zap className="w-5 h-5 text-yellow-400 fill-yellow-400" />
-              <span>Proceed to Checkout</span>
+              {adding ? (
+                <Loader2 className="w-5 h-5 animate-spin text-white" />
+              ) : (
+                <>
+                  <ShoppingBag className="w-5 h-5" />
+                  <span>Add to Cart</span>
+                </>
+              )}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Screen Centered Toast Alert */}
+      <div
+        className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 transition-all duration-300 transform ${
+          toast.show 
+            ? "opacity-100 scale-100 pointer-events-auto" 
+            : "opacity-0 scale-90 pointer-events-none"
+        }`}
+      >
+        <div className="bg-neutral-900/95 backdrop-blur-md text-white px-6 py-4 rounded-3xl shadow-2xl border border-neutral-800 flex items-center gap-3.5 max-w-sm w-[90vw]">
+          <div className="w-8 h-8 rounded-2xl bg-amber-400 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5 text-black stroke-[2.5]" />
+          </div>
+          <span className="text-xs sm:text-sm font-semibold tracking-wide text-neutral-100 line-clamp-2">
+            {toast.message}
+          </span>
         </div>
       </div>
     </div>

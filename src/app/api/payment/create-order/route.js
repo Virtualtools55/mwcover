@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import mongoose from "mongoose";
 import connectDB from "@/lib/db";
-import Order from "@/models/order"; // Casing matches Order.js model filename
+import Order from "@/models/order";
 import User from "@/models/User";
 
 const razorpay = new Razorpay({
@@ -25,6 +25,19 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: "Cart is empty" }, { status: 400 });
     }
 
+    // HIGH SECURITY: Server-side Minimum Order Quantity (MOQ) validation (Strictly >= 3 items)
+    const totalQuantity = products.reduce((acc, item) => acc + (Number(item.quantity) || 1), 0);
+
+    if (totalQuantity < 3) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Security Alert: Minimum order quantity of 3 items is required to process checkout." 
+        }, 
+        { status: 400 }
+      );
+    }
+
     const cookieStore = await cookies();
     const token = cookieStore.get("token")?.value;
 
@@ -41,7 +54,6 @@ export async function POST(req) {
         if (userIdentifier) {
           let dbUser = null;
 
-          // Safe MongoDB lookup without ObjectId Cast Error crash
           if (mongoose.Types.ObjectId.isValid(userIdentifier)) {
             dbUser = await User.findById(userIdentifier);
           }
@@ -70,7 +82,6 @@ export async function POST(req) {
 
     const razorpayOrder = await razorpay.orders.create(options);
 
-    // Initial status set to "Pending". Updated to "Paid" ONLY in verify API after HMAC signature check!
     const newOrder = await Order.create({
       userId,
       phone: userPhone,
@@ -79,7 +90,7 @@ export async function POST(req) {
       products,
       amount: Number(amount),
       razorpayOrderId: razorpayOrder.id,
-      status: "Pending", // SECURE: Payment confirm hone ke baad Verification API ise "Paid" karegi
+      status: "Pending",
     });
 
     return NextResponse.json({

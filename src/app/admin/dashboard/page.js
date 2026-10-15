@@ -12,13 +12,73 @@ import {
   Package, 
   Mail, 
   Save, 
-  Phone, 
-  Clock, 
-  MapPin, 
   CheckCircle2, 
   AlertCircle,
   ShieldAlert
 } from "lucide-react";
+
+// Categories list for filtering and selection reference
+const CATEGORIES_LIST = [
+  { group: "Charging", items: [
+    { label: "Micro cable", value: "micro-cable" },
+    { label: "Type-C Cable", value: "type-c-cable" },
+    { label: "Lightning Cable", value: "lightning-cable" },
+    { label: "Fast Charger", value: "fast-charger" },
+    { label: "Wireless Charger", value: "wireless-charger" },
+    { label: "Car Charger", value: "car-charger" },
+    { label: "Multi-port Charger", value: "multi-port-charger" },
+  ]},
+  { group: "Audio", items: [
+    { label: "TWS Earbuds", value: "tws-earbuds" },
+    { label: "Neckband", value: "neckband" },
+    { label: "Wired Earphones", value: "wired-earphones" },
+    { label: "Bluetooth Headphones", value: "bluetooth-headphones" },
+    { label: "Portable Speaker", value: "portable-speaker" },
+    { label: "AUX Cable", value: "aux-cable" },
+  ]},
+  { group: "Power & Battery", items: [
+    { label: "Power Bank", value: "power-bank" },
+    { label: "Battery", value: "battery" },
+    { label: "Battery Charger", value: "battery-charger" },
+    { label: "Wireless Power Bank", value: "wireless-power-bank" },
+  ]},
+  { group: "Stands & Holders", items: [
+    { label: "Desk Mobile Stand", value: "desk-mobile-stand" },
+    { label: "Car Mobile Holder", value: "car-mobile-holder" },
+    { label: "Bike Mobile Holder", value: "bike-mobile-holder" },
+    { label: "Magnetic Holder", value: "magnetic-holder" },
+    { label: "Flexible Mobile Stand", value: "flexible-mobile-stand" },
+  ]},
+  { group: "Adapters & Converters", items: [
+    { label: "OTG Cable", value: "otg-cable" },
+    { label: "Type-C to USB Converter", value: "type-c-to-usb-converter" },
+    { label: "Type-C to 3.5mm Converter", value: "type-c-to-3.5mm-converter" },
+    { label: "HDMI Adapter", value: "hdmi-adapter" },
+    { label: "USB Hub", value: "usb-hub" },
+    { label: "Card Reader", value: "card-reader" },
+  ]},
+  { group: "Smart Gadgets", items: [
+    { label: "Smartwatch", value: "smartwatch" },
+    { label: "Fitness Band", value: "fitness-band" },
+    { label: "Smart Tag", value: "smart-tag" },
+    { label: "Bluetooth Tracker", value: "bluetooth-tracker" },
+    { label: "Smart LED Gadgets", value: "smart-led-gadgets" },
+  ]},
+  { group: "Vlogging & Photography", items: [
+    { label: "Selfie Stick", value: "selfie-stick" },
+    { label: "Tripod", value: "tripod" },
+    { label: "Ring Light", value: "ring-light" },
+    { label: "Mobile Lens", value: "mobile-lens" },
+    { label: "Phone Camera Accessories", value: "phone-camera-accessories" },
+  ]},
+  { group: "Gaming", items: [
+    { label: "Mobile Gaming Controller", value: "mobile-gaming-controller" },
+    { label: "Gaming Trigger", value: "gaming-trigger" },
+    { label: "Gaming Finger Sleeve", value: "gaming-finger-sleeve" },
+    { label: "Mobile Cooling Fan", value: "mobile-cooling-fan" },
+    { label: "Gaming Headphones", value: "gaming-headphones" },
+  ]}
+];
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -50,7 +110,6 @@ export default function AdminDashboardPage() {
     }, 3500);
   };
 
-  // 1. Verify IP Access on Component Load
   useEffect(() => {
     const verifyIpAccess = async () => {
       try {
@@ -59,7 +118,6 @@ export default function AdminDashboardPage() {
 
         if (data.success) {
           setIsAuthorized(true);
-          // Once authorized, fetch dashboard data
           fetchProducts();
           fetchContactSettings();
         } else {
@@ -94,7 +152,7 @@ export default function AdminDashboardPage() {
 
   const handleProductAdded = () => {
     fetchProducts();
-    showToast("Mobile cover added successfully!");
+    showToast("Product added successfully!");
   };
 
   const fetchContactSettings = async () => {
@@ -109,8 +167,6 @@ export default function AdminDashboardPage() {
           workingHours: data.data.workingHours || "",
           location: data.data.location || ""
         });
-      } else {
-        setCurrentContact(null);
       }
     } catch (err) {
       console.error("Failed to fetch contact settings", err);
@@ -118,7 +174,7 @@ export default function AdminDashboardPage() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this mobile cover?")) return;
+    if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
       const res = await fetch(`/api/admin/fetchProducts?id=${id}`, {
@@ -128,7 +184,7 @@ export default function AdminDashboardPage() {
 
       if (data.success) {
         setProducts((prev) => prev.filter((product) => product._id !== id));
-        showToast("Mobile cover deleted successfully!");
+        showToast("Product deleted successfully!");
       } else {
         showToast("Failed to delete product: " + data.error, "error");
       }
@@ -183,7 +239,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // 2. Show loading screen while checking IP
   if (checkingIp) {
     return (
       <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center">
@@ -195,7 +250,6 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // 3. Block page rendering completely if IP is unauthorized
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center px-4">
@@ -205,14 +259,9 @@ export default function AdminDashboardPage() {
           </div>
           <div className="space-y-2">
             <h1 className="text-lg font-bold text-white">Access Restricted</h1>
-            <p className="text-xs text-neutral-400 leading-relaxed">
-              {ipError}
-            </p>
+            <p className="text-xs text-neutral-400 leading-relaxed">{ipError}</p>
           </div>
-          <Link
-            href="/"
-            className="inline-block w-full bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-3 rounded-xl text-xs transition-colors"
-          >
+          <Link href="/" className="inline-block w-full bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-3 rounded-xl text-xs transition-colors">
             Return to Home
           </Link>
         </div>
@@ -220,22 +269,14 @@ export default function AdminDashboardPage() {
     );
   }
 
-  // 4. Render Dashboard Normally if Authorized
   return (
     <div className="min-h-screen bg-[#0B0B0B] text-white flex flex-col relative">
-      
       {notification && (
         <div className="fixed top-6 right-6 z-50 animate-bounce">
           <div className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs font-semibold ${
-            notification.type === "error" 
-              ? "bg-rose-950/90 border-rose-800 text-rose-200" 
-              : "bg-neutral-900 border-yellow-500/50 text-white"
+            notification.type === "error" ? "bg-rose-950/90 border-rose-800 text-rose-200" : "bg-neutral-900 border-yellow-500/50 text-white"
           }`}>
-            {notification.type === "error" ? (
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-            ) : (
-              <CheckCircle2 className="w-4 h-4 text-yellow-400 shrink-0" />
-            )}
+            {notification.type === "error" ? <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" /> : <CheckCircle2 className="w-4 h-4 text-yellow-400 shrink-0" />}
             <span>{notification.message}</span>
           </div>
         </div>
@@ -251,11 +292,7 @@ export default function AdminDashboardPage() {
             <p className="text-xs text-neutral-400">Manage store catalog & support configuration</p>
           </div>
         </div>
-
-        <Link
-          href="/admin"
-          className="flex items-center gap-2 text-xs font-semibold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/50 px-4 py-2.5 rounded-xl transition-colors"
-        >
+        <Link href="/admin" className="flex items-center gap-2 text-xs font-semibold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/50 px-4 py-2.5 rounded-xl transition-colors">
           <LogOut className="w-4 h-4" />
           <span>Logout</span>
         </Link>
@@ -267,9 +304,9 @@ export default function AdminDashboardPage() {
           <div className="lg:col-span-5 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl">
             <div className="mb-6 flex items-center gap-2 border-b border-neutral-800 pb-4">
               <PlusCircle className="w-5 h-5 text-yellow-400" />
-              <h2 className="text-lg font-bold text-white">Add New Mobile Cover</h2>
+              <h2 className="text-lg font-bold text-white">Add New Product</h2>
             </div>
-            <AddProductForm onProductAdded={handleProductAdded} />
+            <AddProductForm onProductAdded={handleProductAdded} categoriesList={CATEGORIES_LIST} />
           </div>
 
           <div className="lg:col-span-7 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl">
@@ -287,27 +324,23 @@ export default function AdminDashboardPage() {
               <div className="text-center py-12 text-neutral-500 text-sm">Loading products...</div>
             ) : products.length === 0 ? (
               <div className="text-center py-12 border border-dashed border-neutral-800 rounded-xl">
-                <p className="text-neutral-400 text-sm font-medium">No mobile covers added yet.</p>
+                <p className="text-neutral-400 text-sm font-medium">No products added yet.</p>
                 <p className="text-neutral-600 text-xs mt-1">Use the left form to upload your first item.</p>
               </div>
             ) : (
               <div className="space-y-4 max-h-[650px] overflow-y-auto pr-2">
                 {products.map((product) => (
-                  <div
-                    key={product._id}
-                    className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 p-3.5 rounded-xl hover:border-yellow-400/50 transition-all group"
-                  >
+                  <div key={product._id} className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 p-3.5 rounded-xl hover:border-yellow-400/50 transition-all group">
                     <div className="flex items-center gap-4">
-                      <img
-                        src={product.imageUrl}
-                        alt={product.title}
-                        className="w-14 h-14 object-cover rounded-lg bg-neutral-800 border border-neutral-700"
-                      />
+                      <img src={product.imageUrl} alt={product.title} className="w-14 h-14 object-cover rounded-lg bg-neutral-800 border border-neutral-700" />
                       <div>
                         <h3 className="text-sm font-semibold text-neutral-100 group-hover:text-yellow-400 transition-colors">
                           {product.title}
                         </h3>
-                        <p className="text-xs font-bold text-yellow-400 mt-0.5">₹{product.price}</p>
+                        <span className="inline-block text-[10px] bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded mt-0.5">
+                          {product.category || "mobile-cover"}
+                        </span>
+                        <p className="text-xs font-bold text-yellow-400 mt-1">₹{product.price}</p>
                       </div>
                     </div>
 
@@ -326,7 +359,6 @@ export default function AdminDashboardPage() {
 
         </div>
 
-        {/* Contact Settings Section */}
         <div className="bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl space-y-6">
           <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
             <div className="flex items-center gap-2">

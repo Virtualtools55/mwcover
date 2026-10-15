@@ -18,14 +18,24 @@ export async function POST(request) {
     const title = formData.get("title");
     const originalPrice = formData.get("originalPrice");
     const price = formData.get("price");
+    const category = formData.get("category"); // <--- Extracted category from form
     const file = formData.get("image");
 
-    if (!title || !originalPrice || !price || !file) {
+    if (!title || !originalPrice || !price || !category || !file) {
       return NextResponse.json(
-        { success: false, error: "All fields (title, originalPrice, price, image) are required." },
+        { success: false, error: "All fields (title, originalPrice, price, category, image) are required." },
         { status: 400 }
       );
     }
+
+    // Generate unique slug from title to satisfy schema requirements
+    const baseSlug = title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const slug = `${baseSlug}-${Date.now()}`;
 
     // Convert file into a Buffer for ImageKit upload
     const bytes = await file.arrayBuffer();
@@ -38,11 +48,13 @@ export async function POST(request) {
       folder: "/ecommerce-products",
     });
 
-    // Save product data including both original and selling prices to MongoDB
+    // Save product data including slug and category to MongoDB
     const newProduct = await Product.create({
       title,
+      slug,             // <--- Included slug
       originalPrice: Number(originalPrice),
       price: Number(price),
+      category,         // <--- Included category
       imageUrl: uploadResponse.url,
       imageFileId: uploadResponse.fileId,
     });

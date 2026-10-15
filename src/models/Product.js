@@ -1,30 +1,62 @@
-// models/Product.js
 import mongoose from "mongoose";
 
-const ProductSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: [true, "Please provide a product title."],
-      trim: true,
-    },
-    originalPrice: {
-      type: Number,
-      required: [true, "Please provide an original MRP price."],
-    },
-    price: {
-      type: Number,
-      required: [true, "Please provide a selling price."],
-    },
-    imageUrl: {
-      type: String,
-      required: [true, "Please provide an image URL."],
-    },
-    imageFileId: {
-      type: String, 
-    },
-  },
-  { timestamps: true }
-);
+const ProductSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  slug: { type: String, required: true, unique: true },
+  description: { type: String },
+  price: { type: Number, required: true },
+  imageUrl: { type: String, required: true },
+  category: { 
+    type: String, 
+    required: true,
+    enum: [
+      "mobile-cover",
+      "micro-cable",
+      "type-c-cable",
+      "lightning-cable",
+      "fast-charger",
+      "wireless-charger",
+      "car-charger",
+      "multi-port-charger",
+      "tws-earbuds",
+      "neckband",
+      "wired-earphones",
+      "bluetooth-headphones",
+      "portable-speaker",
+      "aux-cable",
+      "power-bank",
+      "battery",
+      "battery-charger",
+      "wireless-power-bank",
+      "desk-mobile-stand",
+      "car-mobile-holder",
+      "bike-mobile-holder",
+      "magnetic-holder",
+      "flexible-mobile-stand",
+      "otg-cable",
+      "type-c-to-usb-converter",
+      "type-c-to-3.5mm-converter",
+      "hdmi-adapter",
+      "usb-hub",
+      "card-reader",
+      "smartwatch",
+      "fitness-band",
+      "smart-tag",
+      "bluetooth-tracker",
+      "smart-led-gadgets",
+      "selfie-stick",
+      "tripod",
+      "ring-light",
+      "mobile-lens",
+      "phone-camera-accessories",
+      "mobile-gaming-controller",
+      "gaming-trigger",
+      "gaming-finger-sleeve",
+      "mobile-cooling-fan",
+      "gaming-headphones"
+    ],
+    default: "mobile-cover"
+  }
+}, { timestamps: true });
 
 export default mongoose.models.Product || mongoose.model("Product", ProductSchema);
