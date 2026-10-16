@@ -1,7 +1,9 @@
+// app/page.js
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Search, PackageOpen, ChevronLeft, ChevronRight, SlidersHorizontal, MoveRight, CheckCircle2, ShoppingBag } from "lucide-react";
 
 // Categories hierarchy configuration matching your structure
@@ -95,7 +97,10 @@ const CATEGORY_SECTIONS = [
   }
 ];
 
-export default function HomePage() {
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get("category");
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -107,6 +112,13 @@ export default function HomePage() {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Update selected category when URL query parameter changes
+  useEffect(() => {
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [categoryParam]);
 
   const fetchProducts = async () => {
     try {
@@ -335,9 +347,15 @@ export default function HomePage() {
         </div>
       </div>
 
-    
-
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center text-xs font-bold text-neutral-500">Loading catalog...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
 

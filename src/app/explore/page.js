@@ -155,17 +155,21 @@ export default function ExplorePage() {
               </h3>
               
               <ul className="flex flex-col gap-2 mb-6">
-                {cat.subcategories.map((sub) => (
-                  <li key={sub}>
-                    <Link
-                      href={`/categories/${sub.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                      className="text-xs font-semibold text-zinc-600 hover:text-yellow-400 flex items-center gap-2 transition-colors py-1 group"
-                    >
-                      <ChevronRight className="w-3 h-3 text-zinc-400 group-hover:text-yellow-400 transition-colors" />
-                      <span>{sub}</span>
-                    </Link>
-                  </li>
-                ))}
+                {cat.subcategories.map((sub) => {
+                  // Slug format match category values (e.g., "Type-C Cable" -> "type-c-cable")
+                  const categorySlug = sub.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                  return (
+                    <li key={sub}>
+                      <Link
+                        href={`/?category=${categorySlug}`}
+                        className="text-xs font-semibold text-zinc-600 hover:text-yellow-400 flex items-center gap-2 transition-colors py-1 group"
+                      >
+                        <ChevronRight className="w-3 h-3 text-zinc-400 group-hover:text-yellow-400 transition-colors" />
+                        <span>{sub}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 

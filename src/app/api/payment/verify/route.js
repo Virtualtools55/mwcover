@@ -3,8 +3,9 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import connectDB from "@/lib/db";
-import Order from "@/models/order"; // Ensure casing matches your actual filename (Order.js vs order.js)
+import Order from "@/models/order";
 import User from "@/models/User";
+import Cart from "@/models/Cart"; // <-- Cart clear karne ke liye import
 
 export async function POST(req) {
   try {
@@ -16,12 +17,10 @@ export async function POST(req) {
       razorpayOrderId,
       razorpaySignature,
       dbOrderId,
-      products,
-      amount,
       status,
     } = body;
 
-    // Handle payment dismissal / failure case from frontend modal ondismiss
+    // 1. Handle payment dismissal / failure case from frontend modal ondismiss
     if (status === "Failed") {
       if (dbOrderId) {
         await Order.findByIdAndUpdate(dbOrderId, { status: "Failed" });
@@ -34,11 +33,12 @@ export async function POST(req) {
       return NextResponse.json({ success: true, message: "Order marked as failed" });
     }
 
-    // Handle verification after successful payment modal callback
+    // 2. Validate essential Razorpay signature parameters
     if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
       return NextResponse.json({ success: false, error: "Missing payment verification parameters" }, { status: 400 });
     }
 
+    // 3. Cryptographic Signature Verification (HMAC SHA256)
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
       .update(`${razorpayOrderId}|${razorpayPaymentId}`)
@@ -51,7 +51,7 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: "Invalid payment signature" }, { status: 400 });
     }
 
-    // Update existing order
+    // 4. Update existing order to Paid status
     let updatedOrder;
     if (dbOrderId) {
       updatedOrder = await Order.findByIdAndUpdate(
@@ -75,50 +75,22 @@ export async function POST(req) {
       );
     }
 
-    // Fallback if order was never written to DB during creation stage
+    // 5. Strict Fallback Guard (Never trust client-passed products/amount)
     if (!updatedOrder) {
-      // Try to fetch logged-in user info for fallback
-      let userPhone = "N/A";
-      let userAddress = "N/A";
-      let userPincode = "N/A";
-      let userId = "guest_user";
+      return NextResponse.json(
+        { success: false, error: "Order record not found for this payment session." },
+        { status: 400 }
+      );
+    }
 
-      try {
-        const cookieStore = await cookies();
-        const token = cookieStore.get("token")?.value;
-        if (token) {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          const userIdentifier = decoded.userId || decoded.id || decoded.email;
-          const dbUser = await User.findOne({
-            $or: [{ _id: userIdentifier }, { email: userIdentifier }],
-          });
-          if (dbUser) {
-            userId = dbUser._id.toString();
-            userPhone = dbUser.mobile ? String(dbUser.mobile) : "N/A";
-            userAddress = dbUser.address || "N/A";
-            userPincode = dbUser.pincode ? String(dbUser.pincode) : "N/A";
-          }
-        }
-      } catch (e) {
-        console.error("Fallback user token error:", e);
-      }
-
-      updatedOrder = await Order.create({
-        userId,
-        phone: userPhone,
-        address: userAddress,
-        pincode: userPincode,
-        products: products || [],
-        amount: Number(amount) || 0,
-        razorpayOrderId,
-        razorpayPaymentId,
-        status: "Paid",
-      });
+    // 6. Clear user cart upon successful payment verification
+    if (updatedOrder.userId && updatedOrder.userId !== "guest_user") {
+      await Cart.deleteMany({ userId: updatedOrder.userId });
     }
 
     return NextResponse.json({ success: true, order: updatedOrder });
   } catch (err) {
-    console.error("Verification error:", err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    console.error("Secure payment verification error:", err);
+    return NextResponse.json({ success: false, error: "Internal server error during verification." }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import connectDB from "@/lib/db";
 import Cart from "@/models/Cart";
+import Product from "@/models/Product";
 
 // Helper function to extract userId from JWT cookie
 function getUserIdFromToken(request) {
@@ -35,7 +36,7 @@ export async function GET(request) {
   }
 }
 
-// POST: Add or update cart item
+// POST: Add or update cart item securely using Database Price Verification
 export async function POST(request) {
   try {
     const userId = getUserIdFromToken(request);
@@ -47,7 +48,7 @@ export async function POST(request) {
     }
 
     await connectDB();
-    const { productId, title, price, imageUrl, quantity = 1 } = await request.json();
+    const { productId, quantity = 1 } = await request.json();
 
     if (!productId) {
       return NextResponse.json(
@@ -56,23 +57,44 @@ export async function POST(request) {
       );
     }
 
+    // Fetch authentic product from database to prevent price tampering
+    const productData = await Product.findById(productId);
+    if (!productData) {
+      return NextResponse.json(
+        { success: false, error: "Product not found in database." },
+        { status: 404 }
+      );
+    }
+
+    // Strict Price Validation: Reject zero or invalid prices
+    const authenticPrice = Number(productData.price);
+    if (isNaN(authenticPrice) || authenticPrice <= 0) {
+      return NextResponse.json(
+        { success: false, error: "Invalid product pricing configured in database." },
+        { status: 400 }
+      );
+    }
+
+    const authenticTitle = productData.title;
+    const authenticImage = productData.imageUrl || productData.image;
+
     // Check if the product already exists in user's cart
     const existingItem = await Cart.findOne({ userId, productId });
 
     if (existingItem) {
-      // Increment quantity if item already exists
       existingItem.quantity += Number(quantity) || 1;
+      existingItem.price = authenticPrice; // Sync with latest authentic price
       await existingItem.save();
       return NextResponse.json({ success: true, data: existingItem }, { status: 200 });
     }
 
-    // Create new cart entry if item does not exist
+    // Create new cart entry with server-verified data
     const newItem = await Cart.create({
       userId,
       productId,
-      title,
-      price: Number(price) || 0,
-      imageUrl,
+      title: authenticTitle,
+      price: authenticPrice,
+      imageUrl: authenticImage,
       quantity: Number(quantity) || 1,
     });
 

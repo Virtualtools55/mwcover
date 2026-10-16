@@ -22,7 +22,7 @@ export default async function ContactPage() {
             <span>Support Desk</span>
           </div>
           <h1 className="text-4xl font-serif font-bold tracking-tight text-zinc-900">Get in Touch</h1>
-          <p className="text-xs text-zinc-500 max-w-md mx-auto">Have questions about your mobile cover order, shipping updates, or custom queries? We're ready to help.</p>
+          <p className="text-xs text-zinc-500 max-w-md mx-auto">Have questions about your mobile accessories, cover order, shipping updates, or custom queries? We're ready to help.</p>
         </div>
 
         {contact && (contact.email || contact.phone || contact.workingHours || contact.location) ? (

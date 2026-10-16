@@ -33,7 +33,10 @@ export default function InfoPage() {
           </div>
           <h2 className="text-base font-bold text-zinc-900">Shipping & Transit</h2>
           <p className="text-xs text-zinc-600 leading-relaxed">
-            All mobile cover orders are packaged with protective shock-proof layers and dispatched rapidly. Standard doorstep delivery takes <strong className="text-zinc-900 font-bold">3–7 working days</strong> depending on your destination pin code.
+            All mobile cover and accessory orders are packaged with protective shock-proof layers and dispatched rapidly. Standard doorstep delivery takes <strong className="text-zinc-900 font-bold">3–7 working days</strong> depending on your destination pin code.
+          </p>
+          <p className="text-xs text-zinc-600 leading-relaxed">
+            If your delivery location is near our fulfillment warehouse, <strong className="text-zinc-900 font-bold">same-day delivery</strong> may also be available for your order!
           </p>
         </section>
 
