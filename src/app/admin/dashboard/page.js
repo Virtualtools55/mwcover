@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import AddProductForm from "@/app/components/AddProductsForm/AddProductsForm";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Add_Staff_Form from "@/app/components/Add_Staff_Form/Add_Staff_Form";
 import { 
   LayoutDashboard, 
   PlusCircle, 
@@ -13,11 +14,9 @@ import {
   Mail, 
   Save, 
   CheckCircle2, 
-  AlertCircle,
-  ShieldAlert
+  AlertCircle
 } from "lucide-react";
 
-// Categories list for filtering and selection reference
 const CATEGORIES_LIST = [
   { group: "Charging", items: [
     { label: "Micro cable", value: "micro-cable" },
@@ -85,15 +84,8 @@ export default function AdminDashboardPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // IP Authorization States
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [checkingIp, setCheckingIp] = useState(true);
-  const [ipError, setIpError] = useState("");
-
-  // Notification Toast State
   const [notification, setNotification] = useState(null);
 
-  // Contact settings state
   const [contactForm, setContactForm] = useState({
     email: "",
     phone: "",
@@ -111,29 +103,8 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    const verifyIpAccess = async () => {
-      try {
-        const res = await fetch("/api/admin/get-ip");
-        const data = await res.json();
-
-        if (data.success) {
-          setIsAuthorized(true);
-          fetchProducts();
-          fetchContactSettings();
-        } else {
-          setIsAuthorized(false);
-          setIpError(data.error || "Access Denied: Your IP is not authorized.");
-        }
-      } catch (err) {
-        console.error("IP verification failed", err);
-        setIsAuthorized(false);
-        setIpError("Server error while verifying network security.");
-      } finally {
-        setCheckingIp(false);
-      }
-    };
-
-    verifyIpAccess();
+    fetchProducts();
+    fetchContactSettings();
   }, []);
 
   const fetchProducts = async () => {
@@ -194,6 +165,15 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/admin/admin-login");
+    } catch (err) {
+      showToast("Failed to log out.", "error");
+    }
+  };
+
   const handleContactSubmit = async (e) => {
     e.preventDefault();
     setSavingContact(true);
@@ -239,38 +219,8 @@ export default function AdminDashboardPage() {
     }
   };
 
-  if (checkingIp) {
-    return (
-      <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-8 h-8 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-xs text-neutral-400 tracking-wider">Verifying secure network access...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthorized) {
-    return (
-      <div className="min-h-screen bg-[#0B0B0B] text-white flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-[#121212] border border-neutral-800 p-8 rounded-2xl text-center shadow-2xl space-y-5">
-          <div className="w-12 h-12 bg-rose-950/60 border border-rose-800 text-rose-400 rounded-2xl flex items-center justify-center mx-auto">
-            <ShieldAlert className="w-6 h-6" />
-          </div>
-          <div className="space-y-2">
-            <h1 className="text-lg font-bold text-white">Access Restricted</h1>
-            <p className="text-xs text-neutral-400 leading-relaxed">{ipError}</p>
-          </div>
-          <Link href="/" className="inline-block w-full bg-neutral-800 hover:bg-neutral-700 text-white font-semibold py-3 rounded-xl text-xs transition-colors">
-            Return to Home
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-[#0B0B0B] text-white flex flex-col relative">
+    <div className="min-h-screen bg-[#0B0B0B] text-white flex flex-col relative selection:bg-amber-400 selection:text-black">
       {notification && (
         <div className="fixed top-6 right-6 z-50 animate-bounce">
           <div className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs font-semibold ${
@@ -288,25 +238,27 @@ export default function AdminDashboardPage() {
             <LayoutDashboard className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-base font-bold text-white">Admin Dashboard</h1>
-            <p className="text-xs text-neutral-400">Manage store catalog & support configuration</p>
+            <h1 className="text-base font-bold text-white">Admin Command Center</h1>
+            <p className="text-xs text-neutral-400">Manage catalog & support configuration</p>
           </div>
         </div>
-        <Link href="/admin" className="flex items-center gap-2 text-xs font-semibold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/50 px-4 py-2.5 rounded-xl transition-colors">
+        <button onClick={handleLogout} className="flex items-center gap-2 text-xs font-semibold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/50 px-4 py-2.5 rounded-xl transition-colors cursor-pointer">
           <LogOut className="w-4 h-4" />
           <span>Logout</span>
-        </Link>
+        </button>
       </header>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-10 space-y-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          <div className="lg:col-span-5 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl">
-            <div className="mb-6 flex items-center gap-2 border-b border-neutral-800 pb-4">
-              <PlusCircle className="w-5 h-5 text-yellow-400" />
-              <h2 className="text-lg font-bold text-white">Add New Product</h2>
+          <div className="lg:col-span-5 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl space-y-8">
+            <div>
+              <div className="mb-6 flex items-center gap-2 border-b border-neutral-800 pb-4">
+                <PlusCircle className="w-5 h-5 text-yellow-400" />
+                <h2 className="text-lg font-bold text-white">Add New Product</h2>
+              </div>
+              <AddProductForm onProductAdded={handleProductAdded} categoriesList={CATEGORIES_LIST} />
             </div>
-            <AddProductForm onProductAdded={handleProductAdded} categoriesList={CATEGORIES_LIST} />
           </div>
 
           <div className="lg:col-span-7 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl">
@@ -328,7 +280,7 @@ export default function AdminDashboardPage() {
                 <p className="text-neutral-600 text-xs mt-1">Use the left form to upload your first item.</p>
               </div>
             ) : (
-              <div className="space-y-4 max-h-[650px] overflow-y-auto pr-2">
+              <div className="space-y-4 max-h-[750px] overflow-y-auto pr-2">
                 {products.map((product) => (
                   <div key={product._id} className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 p-3.5 rounded-xl hover:border-yellow-400/50 transition-all group">
                     <div className="flex items-center gap-4">
@@ -338,7 +290,7 @@ export default function AdminDashboardPage() {
                           {product.title}
                         </h3>
                         <span className="inline-block text-[10px] bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded mt-0.5">
-                          {product.category || "mobile-cover"}
+                          {product.category || "mobile-accessories"}
                         </span>
                         <p className="text-xs font-bold text-yellow-400 mt-1">₹{product.price}</p>
                       </div>
@@ -346,7 +298,7 @@ export default function AdminDashboardPage() {
 
                     <button
                       onClick={() => handleDelete(product._id)}
-                      className="p-2.5 bg-neutral-800 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 rounded-lg transition-colors border border-transparent hover:border-rose-500/30"
+                      className="p-2.5 bg-neutral-800 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 rounded-lg transition-colors border border-transparent hover:border-rose-500/30 cursor-pointer"
                       title="Delete Product"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -368,7 +320,7 @@ export default function AdminDashboardPage() {
             {currentContact && (
               <button
                 onClick={handleDeleteContactSettings}
-                className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/50 px-3.5 py-2 rounded-xl transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/50 px-3.5 py-2 rounded-xl transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Delete Active Contact Info</span>
@@ -406,7 +358,7 @@ export default function AdminDashboardPage() {
                 onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
                 required
                 className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-yellow-400 transition-colors"
-                placeholder="support@yourdomain.com"
+                placeholder="support@caseo.in"
               />
             </div>
 
@@ -458,7 +410,13 @@ export default function AdminDashboardPage() {
             </div>
           </form>
         </div>
+
+        
+<Add_Staff_Form/>
+
       </main>
+
+      
     </div>
   );
 }

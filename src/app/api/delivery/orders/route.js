@@ -3,7 +3,6 @@ import connectDB from "@/lib/db";
 import Order from "@/models/order";
 import User from "@/models/User";
 import DeliveryOtp from "@/models/DeliveryOtp";
-import AllowedIP from "@/models/AllowedIp";
 import nodemailer from "nodemailer";
 import mongoose from "mongoose";
 
@@ -15,35 +14,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-async function verifyIP(req) {
-  const forwarded = req.headers.get("x-forwarded-for");
-  const realIp = req.headers.get("x-real-ip");
-  let clientIp = forwarded ? forwarded.split(",")[0].trim() : (realIp || "");
-  
-  if (clientIp.startsWith("::ffff:")) {
-    clientIp = clientIp.replace("::ffff:", "");
-  }
-
-  try {
-    const allowedDoc = await AllowedIP.findOne({ ip: clientIp });
-    if (!allowedDoc) {
-      return { isAllowed: false, clientIp };
-    }
-    return { isAllowed: true, clientIp };
-  } catch (err) {
-    console.error("[IP Verification Error]:", err);
-    return { isAllowed: false, clientIp };
-  }
-}
-
 export async function GET(req) {
   try {
     await connectDB();
-    const { isAllowed, clientIp } = await verifyIP(req);
-
-    if (!isAllowed) {
-      return NextResponse.json({ success: false, error: `Access Denied: IP (${clientIp}) not authorized.` }, { status: 403 });
-    }
 
     // केवल वही ऑर्डर्स फेच करें जिनका स्टेटस "Paid" है
     const orders = await Order.find({ status: "Paid" }).sort({ createdAt: -1 }).lean();
@@ -71,7 +44,7 @@ export async function GET(req) {
       }
     }
 
-    return NextResponse.json({ success: true, orders, clientIp });
+    return NextResponse.json({ success: true, orders });
   } catch (err) {
     console.error("[DEBUG GET Error]:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -81,10 +54,6 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     await connectDB();
-    const { isAllowed, clientIp } = await verifyIP(req);
-    if (!isAllowed) {
-      return NextResponse.json({ success: false, error: `Access Denied: IP (${clientIp}) not authorized.` }, { status: 403 });
-    }
 
     const body = await req.json();
     const { action, orderId, otp, newStatus } = body;
@@ -130,7 +99,7 @@ export async function POST(req) {
       );
 
       await transporter.sendMail({
-        from: process.env.EMAIL_USER,
+        from: `"Caseo Team" <${process.env.EMAIL_USER}>`,
         to: customerEmail,
         subject: `Verification Code for Order Status Update`,
         text: `Hello ${customerName || "Customer"}, your OTP to update your order status is: ${generatedOtp}. Valid for 10 minutes.`,

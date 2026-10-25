@@ -39,7 +39,7 @@ export async function POST(req) {
     });
 
     await transporter.sendMail({
-      from: `"Cover Support" <${process.env.EMAIL_USER}>`,
+      from: `"Caseo" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Your Verification OTP Code",
       text: `Your OTP code is ${otp}. It is valid for 5 minutes.`,
