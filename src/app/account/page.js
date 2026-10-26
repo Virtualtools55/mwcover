@@ -92,18 +92,18 @@ export default function AccountPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[80vh] bg-[#FAF9F5] flex items-center justify-center">
+      <div className="min-h-screen bg-white sm:bg-[#FAF9F5] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-[85vh] bg-[#FAF9F5] text-neutral-900 px-3 sm:px-6 py-6 sm:py-10 flex items-center justify-center selection:bg-amber-400 selection:text-black">
-      <div className="w-full max-w-lg bg-white rounded-3xl border border-neutral-200/80 p-5 sm:p-8 shadow-xl shadow-amber-500/5 relative overflow-hidden">
+    <div className="min-h-screen bg-white sm:bg-[#FAF9F5] text-neutral-900 px-3 sm:px-6 pt-4 sm:pt-12 pb-28 sm:pb-16 flex flex-col items-center justify-start selection:bg-amber-400 selection:text-black">
+      <div className="w-full max-w-lg bg-white sm:rounded-3xl sm:border sm:border-neutral-200/80 p-4 sm:p-8 sm:shadow-xl sm:shadow-amber-500/5 relative overflow-hidden">
         
         {/* Top Decorative Vibe Badge */}
-        <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-100">
+        <div className="flex items-center justify-between mb-5 pb-4 border-b border-neutral-100">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-[10px] font-bold uppercase tracking-wider text-amber-800 mb-2">
               <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500" />
@@ -151,12 +151,12 @@ export default function AccountPage() {
 
         {/* Status Messages */}
         {error && (
-          <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-2xl text-xs font-semibold">
+          <div className="mb-4 p-3.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-2xl text-xs font-semibold">
             {error}
           </div>
         )}
         {successMsg && (
-          <div className="mb-5 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2">
+          <div className="mb-4 p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{successMsg}</span>
           </div>

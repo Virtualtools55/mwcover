@@ -18,7 +18,7 @@ export async function POST(request) {
     const title = formData.get("title");
     const originalPrice = formData.get("originalPrice");
     const price = formData.get("price");
-    const category = formData.get("category"); // <--- Extracted category from form
+    const category = formData.get("category");
     const file = formData.get("image");
 
     if (!title || !originalPrice || !price || !category || !file) {
@@ -28,7 +28,7 @@ export async function POST(request) {
       );
     }
 
-    // Generate unique slug from title to satisfy schema requirements
+    // Generate unique slug from title
     const baseSlug = title
       .toLowerCase()
       .trim()
@@ -48,13 +48,24 @@ export async function POST(request) {
       folder: "/ecommerce-products",
     });
 
-    // Save product data including slug and category to MongoDB
+    // Explicitly parse and cast numeric fields
+    const parsedOriginalPrice = Number(originalPrice);
+    const parsedSellingPrice = Number(price);
+
+    if (isNaN(parsedOriginalPrice) || isNaN(parsedSellingPrice)) {
+      return NextResponse.json(
+        { success: false, error: "Prices must be valid numbers." },
+        { status: 400 }
+      );
+    }
+
+    // Save product data to MongoDB
     const newProduct = await Product.create({
-      title,
-      slug,             // <--- Included slug
-      originalPrice: Number(originalPrice),
-      price: Number(price),
-      category,         // <--- Included category
+      title: String(title).trim(),
+      slug,
+      originalPrice: parsedOriginalPrice, // Guaranteed numeric save
+      price: parsedSellingPrice,
+      category: String(category).trim(),
       imageUrl: uploadResponse.url,
       imageFileId: uploadResponse.fileId,
     });

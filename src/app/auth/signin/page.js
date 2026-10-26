@@ -2,12 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Sparkles, Loader2, ArrowRight } from "lucide-react";
 
 export default function SignInPage() {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -39,7 +37,7 @@ export default function SignInPage() {
         }
         setStep(2);
       } else {
-        setError(json.error);
+        setError(json.error || "Failed to send OTP.");
       }
     } catch (err) {
       setError("Network error. Please try again.");
@@ -62,19 +60,20 @@ export default function SignInPage() {
       const json = await res.json();
 
       if (json.success) {
-        router.push("/account");
+        // Instant hard redirect to ensure session cookies are synced
+        window.location.href = "/account";
       } else {
-        setError(json.error);
+        setError(json.error || "Invalid or expired OTP.");
       }
     } catch (err) {
-      setError("Sign in failed.");
+      setError("Sign in failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center p-4 text-zinc-900">
+    <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center p-4 text-zinc-900 selection:bg-amber-400 selection:text-black">
       <div className="w-full max-w-md bg-white border border-zinc-200/80 rounded-3xl p-8 shadow-2xl">
         <div className="flex items-center gap-2 mb-6">
           <Sparkles className="w-5 h-5 text-yellow-500" />
@@ -96,7 +95,7 @@ export default function SignInPage() {
               <input
                 type="email"
                 required
-                
+                placeholder="yourname@gmail.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-900 focus:border-yellow-400 focus:outline-none"
@@ -129,8 +128,11 @@ export default function SignInPage() {
                 maxLength="6"
                 placeholder="123456"
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-900 tracking-widest text-center focus:border-yellow-400 focus:outline-none"
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                  setOtp(val);
+                }}
+                className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 text-xs text-zinc-900 tracking-[0.5em] text-center font-bold focus:border-yellow-400 focus:outline-none"
               />
             </div>
 

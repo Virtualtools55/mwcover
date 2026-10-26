@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Search, PackageOpen, ChevronLeft, ChevronRight, SlidersHorizontal, MoveRight, CheckCircle2, ShoppingBag } from "lucide-react";
 
-// Categories hierarchy configuration matching your structure
 const CATEGORY_SECTIONS = [
   {
     mainTitle: "Mobile Covers",
@@ -113,7 +112,6 @@ function HomeContent() {
     fetchProducts();
   }, []);
 
-  // Update selected category when URL query parameter changes
   useEffect(() => {
     if (categoryParam) {
       setSelectedCategory(categoryParam);
@@ -169,29 +167,29 @@ function HomeContent() {
   });
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col font-sans selection:bg-amber-400 selection:text-black relative">
+    <div className="min-h-screen bg-[#FAF9F5] text-neutral-900 flex flex-col font-sans selection:bg-amber-400 selection:text-black relative">
       
       {/* Top Announcement Bar */}
-      <div className="bg-amber-400 text-black text-[11px] sm:text-xs font-bold py-2 px-3 text-center tracking-wide">
+      <div className="bg-amber-400 text-neutral-950 text-[11px] sm:text-xs font-extrabold py-2 px-3 text-center tracking-wide shadow-xs">
         ⚡ Minimum Order Quantity is 3 Items | Fast Shipping Across India 🚀
       </div>
 
-      {/* Header / Navbar - Centered Search Bar */}
+      {/* Header / Search Bar */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-200 px-3 sm:px-6 py-3 flex items-center justify-between shadow-xs">
         <div className="w-full max-w-2xl mx-auto flex items-center gap-3">
-          <div className="relative flex-1 flex items-center bg-neutral-100 focus-within:bg-white border border-neutral-200 focus-within:border-amber-500 focus-within:ring-4 focus-within:ring-amber-500/10 rounded-2xl px-3.5 py-2.5 transition-all duration-200">
+          <div className="relative flex-1 flex items-center bg-neutral-50 focus-within:bg-white border border-neutral-200 focus-within:border-amber-400 focus-within:ring-4 focus-within:ring-amber-400/20 rounded-2xl px-3.5 py-2.5 transition-all duration-200">
             <Search className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 mr-2.5 shrink-0" />
             <input
               type="text"
               placeholder="Search covers, chargers, earbuds, powerbanks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent text-xs sm:text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+              className="w-full bg-transparent text-xs sm:text-sm font-semibold text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="text-xs text-neutral-400 hover:text-neutral-600 bg-neutral-200 hover:bg-neutral-300 rounded-full px-2 py-0.5 ml-1.5 font-bold transition-colors"
+                className="text-xs text-neutral-400 hover:text-neutral-600 bg-neutral-200 hover:bg-neutral-300 rounded-full px-2 py-0.5 ml-1.5 font-bold transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -200,10 +198,10 @@ function HomeContent() {
 
           <Link
             href="/cart"
-            className="p-2.5 bg-neutral-100 hover:bg-neutral-200 border border-neutral-200 rounded-2xl text-neutral-800 transition-all flex items-center justify-center shrink-0"
+            className="p-2.5 bg-amber-400 hover:bg-amber-300 border border-amber-500/50 rounded-2xl text-neutral-950 transition-all flex items-center justify-center shrink-0 shadow-sm active:scale-95 cursor-pointer"
             title="View Cart"
           >
-            <ShoppingBag className="w-5 h-5 text-neutral-900" />
+            <ShoppingBag className="w-5 h-5" />
           </Link>
         </div>
       </header>
@@ -212,14 +210,14 @@ function HomeContent() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-10">
 
         {/* Category Navigation Bar */}
-        <div className="space-y-2 bg-white p-3 rounded-2xl border border-neutral-200 shadow-xs">
+        <div className="space-y-2 bg-white p-3 rounded-2xl border border-neutral-200 shadow-sm">
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-800 uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-xs font-black text-neutral-900 uppercase tracking-wider">
               <SlidersHorizontal className="w-3.5 h-3.5 text-amber-500" />
               <span>Explore Categories</span>
             </div>
             
-            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 animate-pulse">
+            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-400/15 px-2.5 py-0.5 rounded-full border border-amber-400/30">
               <span>Swipe</span>
               <MoveRight className="w-3 h-3" />
             </div>
@@ -245,8 +243,8 @@ function HomeContent() {
                 onClick={() => setSelectedCategory("all")}
                 className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 touch-manipulation ${
                   selectedCategory === "all" 
-                    ? "bg-black text-white shadow-md ring-2 ring-black" 
-                    : "bg-neutral-100 text-neutral-700 hover:text-black border border-neutral-200"
+                    ? "bg-amber-400 text-neutral-950 shadow-md ring-2 ring-amber-400/50" 
+                    : "bg-neutral-50 text-neutral-700 hover:text-black border border-neutral-200"
                 }`}
               >
                 All Products
@@ -259,8 +257,8 @@ function HomeContent() {
                   onClick={() => setSelectedCategory(cat.value)}
                   className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 touch-manipulation ${
                     selectedCategory === cat.value 
-                      ? "bg-black text-white shadow-md ring-2 ring-black" 
-                      : "bg-neutral-100 text-neutral-700 hover:text-black border border-neutral-200"
+                      ? "bg-amber-400 text-neutral-950 font-bold shadow-md ring-2 ring-amber-400/50" 
+                      : "bg-neutral-50 text-neutral-700 hover:text-black border border-neutral-200"
                   }`}
                 >
                   {cat.label}
@@ -279,19 +277,19 @@ function HomeContent() {
           </div>
         </div>
 
-        {/* Products Loading / Listing Grid */}
+        {/* Products Listing Grid */}
         {loading ? (
           <div className="text-center py-20 text-neutral-500 text-sm font-medium animate-pulse">
             Loading products catalog...
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-16 border border-dashed border-neutral-300 bg-white rounded-2xl space-y-3 px-4">
+          <div className="text-center py-16 border border-dashed border-neutral-300 bg-white rounded-3xl space-y-3 px-4 shadow-sm">
             <PackageOpen className="w-10 h-10 text-neutral-400 mx-auto" />
-            <p className="text-neutral-700 text-sm font-semibold">No products found in this section.</p>
+            <p className="text-neutral-800 text-sm font-bold">No products found in this section.</p>
             <p className="text-neutral-400 text-xs">Try selecting 'All Products' or search for another keyword.</p>
           </div>
         ) : selectedCategory !== "all" || searchQuery !== "" ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
             {filteredProducts.map((product) => (
               <ProductCard key={product._id || product.id} product={product} onAddToCartSuccess={showToast} />
             ))}
@@ -307,16 +305,16 @@ function HomeContent() {
               return (
                 <div key={idx} className="space-y-4">
                   <div className="flex items-center justify-between border-b border-neutral-200 pb-2">
-                    <h2 className="text-sm sm:text-lg font-bold text-neutral-900 flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <h2 className="text-sm sm:text-base font-black text-neutral-900 flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                       {section.mainTitle}
                     </h2>
-                    <span className="text-xs text-neutral-500 font-medium">
+                    <span className="text-xs text-neutral-500 font-semibold">
                       {sectionProducts.length} items
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
                     {sectionProducts.map((product) => (
                       <ProductCard key={product._id || product.id} product={product} onAddToCartSuccess={showToast} />
                     ))}
@@ -329,7 +327,7 @@ function HomeContent() {
 
       </main>
 
-      {/* Screen Centered Modern Custom Toast Notification */}
+      {/* Screen Centered Toast Notification */}
       <div
         className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 transition-all duration-300 transform ${
           toast.show 
@@ -337,9 +335,9 @@ function HomeContent() {
             : "opacity-0 scale-90 pointer-events-none"
         }`}
       >
-        <div className="bg-neutral-900/95 backdrop-blur-md text-white px-6 py-4 rounded-3xl shadow-2xl border border-neutral-800 flex items-center gap-3.5 max-w-sm w-[90vw]">
-          <div className="w-8 h-8 rounded-2xl bg-amber-400 flex items-center justify-center shrink-0">
-            <CheckCircle2 className="w-5 h-5 text-black stroke-[2.5]" />
+        <div className="bg-neutral-900 text-white px-6 py-4 rounded-3xl shadow-2xl border border-neutral-800 flex items-center gap-3.5 max-w-sm w-[90vw]">
+          <div className="w-8 h-8 rounded-xl bg-amber-400 flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-5 h-5 text-neutral-950 stroke-[2.5]" />
           </div>
           <span className="text-xs sm:text-sm font-semibold tracking-wide text-neutral-100 line-clamp-2">
             {toast.message}
@@ -353,7 +351,7 @@ function HomeContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-neutral-50 flex items-center justify-center text-xs font-bold text-neutral-500">Loading catalog...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center text-xs font-bold text-neutral-500">Loading catalog...</div>}>
       <HomeContent />
     </Suspense>
   );
@@ -362,6 +360,10 @@ export default function HomePage() {
 // Reusable Product Card Component
 function ProductCard({ product, onAddToCartSuccess }) {
   const [adding, setAdding] = useState(false);
+
+  const origPrice = Number(product.originalPrice) || 0;
+  const sellPrice = Number(product.price) || 0;
+  const discountPercent = origPrice > sellPrice ? Math.round(((origPrice - sellPrice) / origPrice) * 100) : 0;
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -372,13 +374,11 @@ function ProductCard({ product, onAddToCartSuccess }) {
       
       const res = await fetch("/api/cart", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: productId,
           title: product.title,
-          price: Number(product.price) || 0,
+          price: sellPrice,
           imageUrl: product.imageUrl || product.image,
           quantity: 1,
         }),
@@ -391,9 +391,9 @@ function ProductCard({ product, onAddToCartSuccess }) {
 
       const json = await res.json();
       if (json.success) {
-        onAddToCartSuccess(`${product.title} ✨ Added to cart successfully!`);
+        onAddToCartSuccess(`${product.title} ✨ Added to bag successfully!`);
       } else {
-        onAddToCartSuccess(json.error || "Failed to add product to cart.");
+        onAddToCartSuccess(json.error || "Failed to add product.");
       }
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -404,7 +404,7 @@ function ProductCard({ product, onAddToCartSuccess }) {
   };
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden hover:border-neutral-400 transition-all group flex flex-col justify-between shadow-xs hover:shadow-md w-full">
+    <div className="bg-white border border-neutral-200/60 rounded-2xl overflow-hidden hover:border-amber-400 transition-all duration-200 group flex flex-col justify-between shadow-xs hover:shadow-lg w-full">
       <div>
         <div className="relative aspect-square overflow-hidden bg-neutral-100">
           <img
@@ -416,28 +416,38 @@ function ProductCard({ product, onAddToCartSuccess }) {
             }}
           />
           {product.category && (
-            <span className="absolute top-2 left-2 bg-white/95 backdrop-blur-md text-[9px] text-neutral-700 px-2 py-0.5 rounded-full uppercase tracking-wider font-semibold border border-neutral-200 shadow-xs max-w-[80%] truncate">
+            <span className="absolute top-2 left-2 bg-white/95 backdrop-blur-md text-[9px] text-neutral-700 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold border border-neutral-200 shadow-xs max-w-[80%] truncate">
               {product.category.replace(/-/g, " ")}
             </span>
           )}
+
+          {/* Discount Badge */}
+          {discountPercent > 0 && (
+            <span className="absolute top-2 right-2 bg-amber-400 text-neutral-950 text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">
+              {discountPercent}% OFF
+            </span>
+          )}
         </div>
-        <div className="p-2.5 sm:p-3.5 space-y-1">
-          <h3 className="text-xs sm:text-sm font-semibold text-neutral-900 group-hover:text-amber-600 transition-colors line-clamp-1">
+
+        <div className="p-3 space-y-1.5">
+          <h3 className="text-xs sm:text-sm font-bold text-black group-hover:text-amber-500 transition-colors line-clamp-1">
             {product.title}
           </h3>
-          <div className="flex items-center gap-1.5">
-            <p className="text-xs sm:text-sm font-bold text-neutral-900">₹{product.price}</p>
-            {product.originalPrice && (
-              <p className="text-[10px] sm:text-xs text-neutral-400 line-through">₹{product.originalPrice}</p>
+
+          {/* Dual Pricing Display: Selling Price & Strikethrough Red Original Price */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm font-black text-neutral-900">₹{sellPrice}</span>
+            {origPrice > sellPrice && (
+              <span className="text-[11px] sm:text-xs text-rose-600 line-through font-mono">₹{origPrice}</span>
             )}
           </div>
         </div>
       </div>
 
-      <div className="p-2.5 sm:p-3.5 pt-0 grid grid-cols-2 gap-1.5">
+      <div className="p-3 pt-0 grid grid-cols-2 gap-1.5">
         <Link
           href={`/product/${product._id || product.id}`}
-          className="w-full block text-center bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-semibold py-1.5 rounded-xl text-[11px] sm:text-xs transition-all border border-neutral-200"
+          className="w-full block text-center bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold py-2 rounded-xl text-[11px] transition-all border border-neutral-200"
         >
           Details
         </Link>
@@ -445,9 +455,9 @@ function ProductCard({ product, onAddToCartSuccess }) {
           type="button"
           onClick={handleAddToCart}
           disabled={adding}
-          className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-1.5 rounded-xl text-[11px] sm:text-xs transition-all shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+          className="w-full bg-amber-400 hover:bg-amber-300 text-neutral-950 font-extrabold py-2 rounded-xl text-[11px] transition-all shadow-sm cursor-pointer active:scale-95 disabled:opacity-50"
         >
-          {adding ? "Adding..." : "Add"}
+          {adding ? "Adding..." : "Add Bag"}
         </button>
       </div>
     </div>

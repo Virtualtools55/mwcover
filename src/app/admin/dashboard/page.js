@@ -1,3 +1,4 @@
+// app/admin/dashboard/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -292,7 +293,16 @@ export default function AdminDashboardPage() {
                         <span className="inline-block text-[10px] bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded mt-0.5">
                           {product.category || "mobile-accessories"}
                         </span>
-                        <p className="text-xs font-bold text-yellow-400 mt-1">₹{product.price}</p>
+                        
+                        {/* Dual Pricing Display: Strikethrough Original MRP in red followed by Selling Price */}
+                        <div className="flex items-center gap-2.5 mt-1">
+                          <span className="text-xs font-bold text-yellow-400">₹{product.price}</span>
+                          {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
+                            <span className="text-[11px] text-rose-500 line-through font-mono">
+                              ₹{product.originalPrice}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -411,12 +421,9 @@ export default function AdminDashboardPage() {
           </form>
         </div>
 
-        
-<Add_Staff_Form/>
+        <Add_Staff_Form />
 
       </main>
-
-      
     </div>
   );
 }
