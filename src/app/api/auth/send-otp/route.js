@@ -1,3 +1,4 @@
+// app/api/auth/send-otp/route.js
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import dbConnect from "@/lib/db";
@@ -15,7 +16,7 @@ const transporter = nodemailer.createTransport({
 export async function POST(req) {
   try {
     await dbConnect();
-    const { email, mode } = await req.json(); // mode: 'login' or 'signup'
+    const { email, mode = "login" } = await req.json(); // mode: 'login' or 'signup'
 
     if (!email || !email.includes("@")) {
       return NextResponse.json({ success: false, error: "Valid email address is required." }, { status: 400 });
@@ -24,22 +25,30 @@ export async function POST(req) {
     const cleanEmail = String(email).trim().toLowerCase();
     const existingUser = await User.findOne({ email: cleanEmail }).lean();
 
-    // Mode-based checks
+    // STRICT CHECK: Mode-based verification
     if (mode === "login" && !existingUser) {
       return NextResponse.json(
-        { success: false, error: "No account found with this email. Please sign up first." },
+        { 
+          success: false, 
+          isExistingUser: false,
+          error: "No account found with this email address. Please sign up first." 
+        },
         { status: 404 }
       );
     }
 
     if (mode === "signup" && existingUser) {
       return NextResponse.json(
-        { success: false, error: "Account already exists with this email. Please log in." },
+        { 
+          success: false, 
+          isExistingUser: true,
+          error: "Account already exists with this email. Please log in." 
+        },
         { status: 400 }
       );
     }
 
-    // 6-digit OTP generation
+    // 6-digit OTP generation (Only reached if checks pass)
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 Minutes
 
@@ -59,8 +68,8 @@ export async function POST(req) {
         <div style="font-family: sans-serif; padding: 20px; background: #0b0b0b; color: #ffffff; border-radius: 12px;">
           <h2 style="color: #fbbf24;">Caseo Authentication</h2>
           <p>Your OTP for verification is:</p>
-          <h1 style="font-size: 32px; letter-spacing: 5px; color: #fbbf24; background: #121212; padding: 10px; display: inline-block; rounded: 8px;">${generatedOtp}</h1>
-          <p style="font-size: 12px; color: #888888;">Valid for 5 minutes only.</p>
+          <h1 style="font-size: 32px; letter-spacing: 5px; color: #fbbf24; background: #121212; padding: 10px; display: inline-block; border-radius: 8px;">${generatedOtp}</h1>
+          <p style="font-size: 12px; color: #888888;">Valid for 10 minutes only.</p>
         </div>
       `,
     });
