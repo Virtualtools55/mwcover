@@ -122,7 +122,7 @@ function OrdersContent() {
             <div className="text-center space-y-1.5">
               <h3 className="text-base font-black text-neutral-900">Cancel This Order?</h3>
               <p className="text-xs text-neutral-500 leading-relaxed font-medium">
-                Kya aap waqai apna order cancel karna chahte hain? Refund aapke original payment method par 5-7 business days mein credit kar diya jayega.
+                Are you sure you want to cancel this order? The refund will be credited back to your original payment method within 3-7 business days.
               </p>
             </div>
 
@@ -227,6 +227,7 @@ function OrdersContent() {
                     <span className={`text-[10px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full ${
                       order.status === "Delivered" ? "bg-emerald-600 text-white" :
                       order.status === "Failed" ? "bg-rose-600 text-white" :
+                      order.status === "Cancelled" ? "bg-rose-900 text-white font-extrabold" :
                       order.status === "Paid" || order.status === "Pending" ? "bg-amber-400 text-black font-extrabold" :
                       "bg-stone-900 text-white"
                     }`}>
@@ -250,9 +251,9 @@ function OrdersContent() {
                   )}
 
                   {order.status === "Cancelled" && (
-                    <div className="flex items-center gap-2.5 bg-stone-100 border border-stone-200 rounded-xl px-4 py-3 text-xs text-stone-600">
-                      <Ban className="w-4 h-4 text-stone-500 shrink-0" />
-                      <span>🚫 This order was cancelled by you.</span>
+                    <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800">
+                      <RefreshCw className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>🚫 Order cancelled. Your refund has been initiated to your original payment method within <strong className="font-bold text-stone-900">3-7 business days</strong>.</span>
                     </div>
                   )}
 
@@ -266,7 +267,7 @@ function OrdersContent() {
                   {order.status === "Refund Initiated" && (
                     <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800">
                       <RefreshCw className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>💸 Order cancelled. Refund initiated to your original payment method within <strong className="font-bold text-stone-900">3-7 business days</strong>.</span>
+                      <span>💸 Order cancelled. Refund initiated to your original payment method within <strong className="font-bold text-stone-900">5-7 business days</strong>.</span>
                     </div>
                   )}
 
