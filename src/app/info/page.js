@@ -23,7 +23,7 @@ export default function InfoPage() {
             You can cancel your order directly from your profile dashboard within <strong className="text-zinc-900 font-bold">30 minutes</strong> of placing it. 
           </p>
           <p className="text-xs text-zinc-600 leading-relaxed">
-            For cancelled orders or approved returns, refunds are automatically processed back to your original payment method and reflect in your account within <strong className="text-zinc-900 font-bold">3-5 working days</strong>.
+            For cancelled orders or approved returns, refunds are automatically processed back to your original payment method and reflect in your account within <strong className="text-zinc-900 font-bold">3-7 working days</strong>.
           </p>
         </section>
 

@@ -57,7 +57,7 @@ export async function POST(req) {
     await transporter.sendMail({
       from: `"Caseo Team" <${process.env.EMAIL_USER}>`,
       to: staff.email,
-      subject: "Your Admin Security OTP",
+      subject: "Your Secure OTP",
       text: `Your login OTP is: ${otp}. It is valid for 10 minutes.`,
       html: `<h3>Your Login OTP</h3><p>Your secure OTP is: <b>${otp}</b></p><p>Valid for 10 minutes only.</p>`,
     });
