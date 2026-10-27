@@ -1,3 +1,4 @@
+// app/api/delivery/orders/route.js
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Order from "@/models/order";
@@ -36,6 +37,9 @@ export async function GET(req) {
               _id: userDoc._id,
               name: userDoc.name,
               email: userDoc.email,
+              phone: userDoc.phone || order.phone,
+              address: userDoc.address || order.address,
+              pincode: userDoc.pincode || order.pincode,
             };
           }
         } catch (err) {
@@ -88,6 +92,7 @@ export async function POST(req) {
       return NextResponse.json({ success: false, error: "Customer email not found." }, { status: 400 });
     }
 
+    // ACTION 1: SEND OTP
     if (action === "send-otp") {
       const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
       const expiryTime = Date.now() + 10 * 60 * 1000; // 10 minutes
@@ -98,16 +103,29 @@ export async function POST(req) {
         { upsert: true, new: true }
       );
 
+      const actionTitle = newStatus === "Cancelled" ? "Order Cancellation" : "Order Delivery Confirmation";
+
       await transporter.sendMail({
-        from: `"Caseo Team" <${process.env.EMAIL_USER}>`,
+        from: `"Caseo" <${process.env.EMAIL_USER}>`,
         to: customerEmail,
-        subject: `Verification Code for Order Status Update`,
-        text: `Hello ${customerName || "Customer"}, your OTP to update your order status is: ${generatedOtp}. Valid for 10 minutes.`,
+        subject: `Verification Code for ${actionTitle} - Caseo`,
+        html: `
+          <div style="font-family: sans-serif; padding: 25px; background: #0b0b0b; color: #ffffff; border-radius: 16px; max-width: 450px; margin: auto;">
+            <h2 style="color: #fbbf24; margin-bottom: 10px;">Caseo Secure Dispatch</h2>
+            <p style="color: #cccccc; font-size: 14px;">Your delivery agent has requested confirmation for <strong>${actionTitle}</strong> of Order #${order._id.toString().toUpperCase()}.</p>
+            <p style="color: #cccccc; font-size: 14px;">Please share this 6-digit verification OTP with the agent:</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <span style="font-size: 36px; letter-spacing: 8px; color: #fbbf24; background: #1a1a1a; padding: 12px 24px; border-radius: 12px; font-weight: bold; display: inline-block;">${generatedOtp}</span>
+            </div>
+            <p style="font-size: 11px; color: #777777; text-align: center;">This code is valid for 10 minutes only. Do not share it with anyone else.</p>
+          </div>
+        `,
       });
 
       return NextResponse.json({ success: true, message: "OTP sent successfully to " + customerEmail });
     }
 
+    // ACTION 2: VERIFY OTP & UPDATE STATUS
     if (action === "verify-otp") {
       const otpRecord = await DeliveryOtp.findOne({ orderId });
       
@@ -123,12 +141,18 @@ export async function POST(req) {
         return NextResponse.json({ success: false, error: "Invalid or expired OTP, or missing status." }, { status: 400 });
       }
 
+      // Update Order Status ("Cancelled" or "Delivered")
       order.status = newStatus;
       await order.save();
 
+      // Clear OTP record after successful verification
       await DeliveryOtp.deleteOne({ orderId });
 
-      return NextResponse.json({ success: true, message: `Order successfully marked as ${newStatus}`, order });
+      const successMessage = newStatus === "Cancelled"
+        ? "Order cancelled successfully. Refund initiated to original payment method within 5-7 business days."
+        : "Order successfully marked as delivered!";
+
+      return NextResponse.json({ success: true, message: successMessage, order });
     }
 
     return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });

@@ -1,7 +1,8 @@
+// app/delivery/page.js
 "use client";
 
 import { useState, useEffect } from "react";
-import { ShieldAlert, Package, Loader2, RefreshCw, XCircle, CheckCircle, Lock, Phone, ZoomIn, X, ShoppingBag, MapPin } from "lucide-react";
+import { ShieldAlert, Package, Loader2, RefreshCw, XCircle, CheckCircle, Lock, Phone, ZoomIn, X, ShoppingBag, MapPin, Sparkles } from "lucide-react";
 
 export default function DeliveryPage() {
   const [orders, setOrders] = useState([]);
@@ -19,6 +20,16 @@ export default function DeliveryPage() {
   const [zoomImageUrl, setZoomImageUrl] = useState(null);
   const [zoomImageTitle, setZoomImageTitle] = useState("");
   const [zoomImagePrice, setZoomImagePrice] = useState("");
+
+  // Toast Notification State
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: "", type: "success" });
+    }, 4000);
+  };
 
   const fetchDeliveryOrders = async () => {
     setLoading(true);
@@ -63,18 +74,22 @@ export default function DeliveryPage() {
       const data = await res.json();
       if (data.success) {
         setOtpSent(true);
+        showToast("📧 Verification OTP sent to customer's email!", "success");
       } else {
-        alert(data.error || "Failed to send OTP.");
+        showToast(`⚠️ ${data.error || "Failed to send OTP."}`, "error");
       }
     } catch {
-      alert("Network error while sending OTP.");
+      showToast("❌ Network error while sending OTP.", "error");
     } finally {
       setActionLoading(false);
     }
   };
 
   const handleVerifyOtp = async () => {
-    if (!otp) return alert("Please enter the OTP.");
+    if (!otp) {
+      showToast("⚠️ Please enter the 6-digit OTP.", "error");
+      return;
+    }
     setActionLoading(true);
 
     try {
@@ -85,14 +100,14 @@ export default function DeliveryPage() {
       });
       const data = await res.json();
       if (data.success) {
-        alert(data.message);
+        showToast(`✨ ${data.message}`, "success");
         setModalOpen(false);
         fetchDeliveryOrders();
       } else {
-        alert(data.error || "Verification failed.");
+        showToast(`⚠️ ${data.error || "Verification failed."}`, "error");
       }
     } catch {
-      alert("Error verifying OTP.");
+      showToast("❌ Error verifying OTP.", "error");
     } finally {
       setActionLoading(false);
     }
@@ -119,7 +134,30 @@ export default function DeliveryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 p-4 sm:p-6 md:p-10">
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 p-4 sm:p-6 md:p-10 relative">
+      
+      {/* Floating Toast Notification */}
+      <div
+        className={`fixed top-6 right-6 z-50 transition-all duration-300 transform ${
+          toast.show 
+            ? "opacity-100 translate-y-0 pointer-events-auto" 
+            : "opacity-0 -translate-y-4 pointer-events-none"
+        }`}
+      >
+        <div className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border text-xs font-bold max-w-sm w-[90vw] ${
+          toast.type === "error" 
+            ? "bg-rose-50 border-rose-200 text-rose-800" 
+            : "bg-neutral-900 border-amber-400/50 text-white"
+        }`}>
+          {toast.type === "error" ? (
+            <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0" />
+          ) : (
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+          )}
+          <span className="leading-relaxed">{toast.message}</span>
+        </div>
+      </div>
+
       <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Header Section */}
