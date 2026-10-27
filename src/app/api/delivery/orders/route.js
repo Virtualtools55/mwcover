@@ -1,4 +1,3 @@
-// app/api/delivery/orders/route.js
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Order from "@/models/order";
@@ -6,6 +5,12 @@ import User from "@/models/User";
 import DeliveryOtp from "@/models/DeliveryOtp";
 import nodemailer from "nodemailer";
 import mongoose from "mongoose";
+import Razorpay from "razorpay";
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -19,7 +24,6 @@ export async function GET(req) {
   try {
     await connectDB();
 
-    // केवल वही ऑर्डर्स फेच करें जिनका स्टेटस "Paid" है
     const orders = await Order.find({ status: "Paid" }).sort({ createdAt: -1 }).lean();
 
     for (let order of orders) {
@@ -125,7 +129,7 @@ export async function POST(req) {
       return NextResponse.json({ success: true, message: "OTP sent successfully to " + customerEmail });
     }
 
-    // ACTION 2: VERIFY OTP & UPDATE STATUS
+    // ACTION 2: VERIFY OTP & UPDATE STATUS / TRIGGER RAZORPAY REFUND
     if (action === "verify-otp") {
       const otpRecord = await DeliveryOtp.findOne({ orderId });
       
@@ -135,10 +139,36 @@ export async function POST(req) {
       const expiryTime = otpRecord?.otpExpires || 0;
       const isExpired = now > expiryTime;
 
-      console.log("[DEBUG POST] Verifying Delivery OTP - Stored:", currentOtp, "Provided:", providedOtp, "Expired:", isExpired);
-
       if (!currentOtp || currentOtp !== providedOtp || isExpired || !newStatus) {
         return NextResponse.json({ success: false, error: "Invalid or expired OTP, or missing status." }, { status: 400 });
+      }
+
+      // IF ORDER IS CANCELLED, TRIGGER RAZORPAY REFUND
+      if (newStatus === "Cancelled") {
+        try {
+          // Check if payment ID exists in order model
+          const paymentId = order.razorpayPaymentId || order.paymentId;
+          
+          if (paymentId) {
+            // Razorpay takes amount in paise (₹1 = 100 paise)
+            const refundAmount = Math.round(order.amount * 100);
+            
+            await razorpay.payments.refund(paymentId, {
+              amount: refundAmount,
+              speed: "optimum",
+              notes: {
+                reason: "Cancelled by delivery agent via secure OTP verification",
+                orderId: order._id.toString(),
+              },
+            });
+            console.log(`[RAZORPAY REFUND] Successfully initiated refund for payment ID: ${paymentId}`);
+          } else {
+            console.log(`[RAZORPAY REFUND] No payment ID found for order ${order._id}, skipping gateway refund.`);
+          }
+        } catch (razorpayErr) {
+          console.error("[RAZORPAY REFUND ERROR]:", razorpayErr);
+          // Continue execution to update status even if gateway refund fails or was already refunded
+        }
       }
 
       // Update Order Status ("Cancelled" or "Delivered")
@@ -149,7 +179,7 @@ export async function POST(req) {
       await DeliveryOtp.deleteOne({ orderId });
 
       const successMessage = newStatus === "Cancelled"
-        ? "Order cancelled successfully. Refund initiated to original payment method within 5-7 business days."
+        ? "Order cancelled successfully. Refund initiated to original payment method within 3-7 business days."
         : "Order successfully marked as delivered!";
 
       return NextResponse.json({ success: true, message: successMessage, order });

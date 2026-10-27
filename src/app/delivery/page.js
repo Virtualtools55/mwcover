@@ -43,7 +43,7 @@ export default function DeliveryPage() {
           (order) => order.status === "Paid"
         );
         setOrders(activeOrders);
-        setClientIp(json.clientIp);
+        setClientIp(json.clientIp || "127.0.0.1");
         setUnauthorized(false);
       }
     } catch {
