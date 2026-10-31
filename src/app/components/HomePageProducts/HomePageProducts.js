@@ -96,6 +96,33 @@ const CATEGORY_SECTIONS = [
   }
 ];
 
+// Professional Gen Z Skeleton Component for Loading State
+function ProductSkeleton() {
+  return (
+    <div className="bg-white border border-neutral-200/70 rounded-2xl overflow-hidden p-3 space-y-3 shadow-xs">
+      {/* Aspect Ratio Square Image Frame */}
+      <div className="relative aspect-square w-full bg-neutral-200/60 rounded-xl overflow-hidden">
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+      </div>
+
+      {/* Meta Text Skeleton Lines */}
+      <div className="space-y-2">
+        <div className="h-3.5 bg-neutral-200/80 rounded-md w-3/4 animate-pulse" />
+        <div className="flex items-center gap-2">
+          <div className="h-4 bg-neutral-300 rounded-md w-1/3 animate-pulse" />
+          <div className="h-3 bg-neutral-200 rounded-md w-1/4 animate-pulse" />
+        </div>
+      </div>
+
+      {/* Buttons Skeleton */}
+      <div className="grid grid-cols-2 gap-1.5 pt-1">
+        <div className="h-8 bg-neutral-200/70 rounded-xl animate-pulse" />
+        <div className="h-8 bg-amber-200/60 rounded-xl animate-pulse" />
+      </div>
+    </div>
+  );
+}
+
 function HomeContent() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
@@ -279,8 +306,27 @@ function HomeContent() {
 
         {/* Products Listing Grid */}
         {loading ? (
-          <div className="text-center py-20 text-neutral-500 text-sm font-medium animate-pulse">
-            Loading products catalog...
+          <div className="space-y-4">
+            {/* Professional Status Header while Loading */}
+            <div className="flex items-center justify-between border-b border-neutral-200/80 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                </span>
+                <span className="text-xs font-black text-neutral-800 uppercase tracking-wider">
+                  Fetching Latest Arrivals...
+                </span>
+              </div>
+             
+            </div>
+
+            {/* 10-Card Responsive Skeleton Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5">
+              {Array.from({ length: 10 }).map((_, index) => (
+                <ProductSkeleton key={index} />
+              ))}
+            </div>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-neutral-300 bg-white rounded-3xl space-y-3 px-4 shadow-sm">
@@ -351,7 +397,14 @@ function HomeContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center text-xs font-bold text-neutral-500">Loading catalog...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center">
+        <div className="flex items-center gap-2 text-xs font-black uppercase text-neutral-500 tracking-wider">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          Initializing Store...
+        </div>
+      </div>
+    }>
       <HomeContent />
     </Suspense>
   );
