@@ -47,6 +47,9 @@ function OrdersContent() {
 
   useEffect(() => {
     fetchOrders();
+    // Optional: Poll orders every 10 seconds to check if webhook updated status to "Refunded"
+    const pollInterval = setInterval(fetchOrders, 10000);
+    return () => clearInterval(pollInterval);
   }, []);
 
   const handleConfirmCancel = async () => {
@@ -87,7 +90,7 @@ function OrdersContent() {
   return (
     <div className="min-h-screen bg-[#FAF9F5] text-stone-900 py-8 px-4 sm:px-6 lg:px-8 selection:bg-amber-400 selection:text-black relative">
       
-      {/* Custom Confirmation Modal */}
+      {/* Confirmation Modal */}
       {confirmModal.show && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-2xl border border-neutral-200 space-y-4">
@@ -97,7 +100,7 @@ function OrdersContent() {
             <div className="text-center space-y-1.5">
               <h3 className="text-base font-black text-neutral-900">Cancel This Order?</h3>
               <p className="text-xs text-neutral-500 leading-relaxed font-medium">
-                Are you sure you want to cancel this order? Your refund will be processed immediately to your original payment method.
+                Are you sure you want to cancel this order? Your refund will be processed back to your original payment method.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2.5 pt-2">
@@ -154,7 +157,7 @@ function OrdersContent() {
               return (
                 <div key={order._id} className="bg-white rounded-2xl border border-stone-200/80 p-5 sm:p-6 shadow-xs space-y-4">
                   
-                  {/* Order Status Badge */}
+                  {/* Status Badge */}
                   <div className="flex items-center justify-between border-b border-stone-100 pb-3.5">
                     <div>
                       <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider block">Order ID</span>
@@ -164,25 +167,34 @@ function OrdersContent() {
                     <span className={`text-[10px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full ${
                       order.status === "Delivered" ? "bg-emerald-600 text-white" :
                       order.status === "Refunded" ? "bg-emerald-700 text-white font-extrabold" :
+                      order.status === "Refund Initiated" ? "bg-amber-500 text-white font-extrabold" :
                       order.status === "Cancelled" ? "bg-rose-900 text-white font-extrabold" :
                       "bg-amber-400 text-black font-extrabold"
                     }`}>
-                      {order.status === "Refunded" ? "Refund Successful" : order.status}
+                      {order.status === "Refund Initiated" ? "Refund Initiated" : 
+                       order.status === "Refunded" ? "Refund Successful" : order.status}
                     </span>
                   </div>
 
-                  {/* Refunded Banner */}
+                  {/* Banners */}
                   {order.status === "Refunded" && (
                     <div className="flex items-center gap-2.5 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-xs text-emerald-800">
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>✨ Refund processed successfully! The amount has been credited back to your original payment method.</span>
+                      <span>✨ Refund Successful! The amount has been credited back to your original payment method.</span>
+                    </div>
+                  )}
+
+                  {order.status === "Refund Initiated" && (
+                    <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800">
+                      <RefreshCw className="w-4 h-4 text-amber-600 shrink-0 animate-spin" />
+                      <span>🔄 Refund Initiated. Your refund is processing to your original payment method (typically takes 3-7 business days).</span>
                     </div>
                   )}
 
                   {order.status === "Cancelled" && (
-                    <div className="flex items-center gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800">
-                      <RefreshCw className="w-4 h-4 text-amber-600 shrink-0" />
-                      <span>🚫 Order cancelled. Refund is processing to your original payment method (takes 3-7 days to reflect in bank).</span>
+                    <div className="flex items-center gap-2.5 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3 text-xs text-rose-800">
+                      <Ban className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>🚫 This order was cancelled.</span>
                     </div>
                   )}
 

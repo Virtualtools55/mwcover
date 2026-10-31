@@ -24,7 +24,7 @@ const transporter = nodemailer.createTransport({
 export async function GET(req) {
   try {
     await connectDB();
-    const orders = await Order.find({ status: { $in: ["Paid", "Cancelled", "Refunded", "Delivered"] } }).sort({ createdAt: -1 }).lean();
+    const orders = await Order.find({ status: "Paid" }).sort({ createdAt: -1 }).lean();
 
     for (let order of orders) {
       if (order.userId) {
@@ -47,13 +47,14 @@ export async function GET(req) {
             };
           }
         } catch (err) {
-          console.log("[DEBUG GET] User lookup error:", err);
+          console.log("[DEBUG GET] User lookup error for order:", order._id);
         }
       }
     }
 
     return NextResponse.json({ success: true, orders });
   } catch (err) {
+    console.error("[DEBUG GET Error]:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
@@ -61,7 +62,8 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     await connectDB();
-    const { action, orderId, otp, newStatus } = await req.json();
+    const body = await req.json();
+    const { action, orderId, otp, newStatus } = body;
 
     const order = await Order.findById(orderId);
     if (!order) {
@@ -71,7 +73,25 @@ export async function POST(req) {
     let customerEmail = order.email || order.shippingAddress?.email;
     let customerName = order.name || order.shippingAddress?.name;
 
-    if (!customerEmail) {
+    if (order.userId) {
+      try {
+        let userDoc = null;
+        if (mongoose.Types.ObjectId.isValid(order.userId)) {
+          userDoc = await User.findById(order.userId);
+        } else {
+          userDoc = await User.findOne({ _id: order.userId }) || await User.findOne({ email: order.email });
+        }
+
+        if (userDoc) {
+          customerEmail = userDoc.email || customerEmail;
+          customerName = userDoc.name || customerName;
+        }
+      } catch (e) {
+        console.log("[DEBUG POST] User lookup failed.");
+      }
+    }
+
+    if (!customerEmail || !customerEmail.includes("@")) {
       return NextResponse.json({ success: false, error: "Customer email not found." }, { status: 400 });
     }
 
@@ -85,11 +105,23 @@ export async function POST(req) {
         { upsert: true, new: true }
       );
 
+      const actionTitle = newStatus === "Cancelled" ? "Order Cancellation" : "Order Delivery Confirmation";
+
       await transporter.sendMail({
-        from: `"Caseo Team" <${process.env.EMAIL_USER}>`,
+        from: `"Caseo" <${process.env.EMAIL_USER}>`,
         to: customerEmail,
-        subject: `Verification Code for Order Cancellation - Caseo`,
-        text: `Hello ${customerName || "Customer"}, your OTP to confirm order cancellation is: ${generatedOtp}. Valid for 10 minutes.`,
+        subject: `Verification Code for ${actionTitle} - Caseo`,
+        html: `
+          <div style="font-family: sans-serif; padding: 25px; background: #0b0b0b; color: #ffffff; border-radius: 16px; max-width: 450px; margin: auto;">
+            <h2 style="color: #fbbf24; margin-bottom: 10px;">Caseo Secure Dispatch</h2>
+            <p style="color: #cccccc; font-size: 14px;">Your delivery agent has requested confirmation for <strong>${actionTitle}</strong> of Order #${order._id.toString().toUpperCase()}.</p>
+            <p style="color: #cccccc; font-size: 14px;">Please share this 6-digit verification OTP with the agent:</p>
+            <div style="text-align: center; margin: 20px 0;">
+              <span style="font-size: 36px; letter-spacing: 8px; color: #fbbf24; background: #1a1a1a; padding: 12px 24px; border-radius: 12px; font-weight: bold; display: inline-block;">${generatedOtp}</span>
+            </div>
+            <p style="font-size: 11px; color: #777777; text-align: center;">This code is valid for 10 minutes only. Do not share it with anyone else.</p>
+          </div>
+        `,
       });
 
       return NextResponse.json({ success: true, message: "OTP sent successfully to " + customerEmail });
@@ -100,27 +132,39 @@ export async function POST(req) {
       const currentOtp = otpRecord?.otp ? String(otpRecord.otp).trim() : "";
       const providedOtp = otp ? String(otp).trim() : "";
       
-      if (!currentOtp || currentOtp !== providedOtp || Date.now() > otpRecord?.otpExpires) {
-        return NextResponse.json({ success: false, error: "Invalid or expired OTP." }, { status: 400 });
+      if (!currentOtp || currentOtp !== providedOtp || Date.now() > otpRecord?.otpExpires || !newStatus) {
+        return NextResponse.json({ success: false, error: "Invalid or expired OTP, or missing status." }, { status: 400 });
       }
 
+      // STATE GUARD
       if (newStatus === "Cancelled") {
+        if (["Refund Initiated", "Refunded", "Cancelled", "Refund Failed"].includes(order.status)) {
+          return NextResponse.json({ success: false, error: `Order is already in '${order.status}' state.` }, { status: 400 });
+        }
+
         try {
           const paymentId = order.razorpayPaymentId || order.paymentId;
           if (paymentId) {
             const refundAmount = Math.round(order.amount * 100);
+            
             await razorpay.payments.refund(paymentId, {
               amount: refundAmount,
               speed: "optimum",
-              notes: { reason: "Cancelled via delivery agent OTP", orderId: order._id.toString() },
+              notes: {
+                reason: "Cancelled by delivery agent via secure OTP verification",
+                orderId: order._id.toString(),
+              },
+            }, {
+              headers: {
+                "X-Idempotency-Key": `delivery_cancel_${order._id.toString()}`
+              }
             });
           }
         } catch (razorpayErr) {
-          console.error("Razorpay refund error:", razorpayErr);
+          console.error("[RAZORPAY REFUND ERROR]:", razorpayErr);
         }
 
-        // UPDATE STATUS TO REFUNDED ONCE GATEWAY CALL COMPLETES
-        order.status = "Refunded";
+        order.status = "Refund Initiated";
       } else {
         order.status = newStatus;
       }
@@ -128,11 +172,16 @@ export async function POST(req) {
       await order.save();
       await DeliveryOtp.deleteOne({ orderId });
 
-      return NextResponse.json({ success: true, message: "Order cancelled and refund processed successfully!", order });
+      const successMessage = newStatus === "Cancelled"
+        ? "Order cancelled. Refund initiated to original payment method."
+        : "Order successfully marked as delivered!";
+
+      return NextResponse.json({ success: true, message: successMessage, order });
     }
 
     return NextResponse.json({ success: false, error: "Invalid action" }, { status: 400 });
   } catch (err) {
+    console.error("Delivery Action Error:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

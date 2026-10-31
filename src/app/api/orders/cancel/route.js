@@ -1,3 +1,4 @@
+// app/api/orders/cancel/route.js
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import jwt from "jsonwebtoken";
@@ -10,7 +11,6 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Secure helper function with async cookies handling
 async function getAuthenticatedUserId() {
   try {
     const cookieStore = await cookies();
@@ -29,7 +29,6 @@ export async function POST(req) {
   try {
     await connectDB();
 
-    // 1. Secure Authentication Check
     const userId = await getAuthenticatedUserId();
     if (!userId) {
       return NextResponse.json(
@@ -46,8 +45,7 @@ export async function POST(req) {
       );
     }
 
-    // 2. Strict IDOR Check: Match both orderId and userId in MongoDB query
-    const order = await Order.findOne({ _id: orderId, userId: userId });
+    const order = await Order.findOne({ _id: orderId, userId: userId.toString() });
     if (!order) {
       return NextResponse.json(
         { success: false, error: "Order not found or unauthorized access attempt." },
@@ -55,7 +53,14 @@ export async function POST(req) {
       );
     }
 
-    // 3. Status Validation
+    // STATE GUARD: Prevent double cancellation / refund if already processed
+    if (["Refund Initiated", "Refunded", "Cancelled", "Refund Failed"].includes(order.status)) {
+      return NextResponse.json(
+        { success: false, error: `Order is already in '${order.status}' state.` },
+        { status: 400 }
+      );
+    }
+
     if (order.status !== "Paid") {
       return NextResponse.json(
         { success: false, error: "Only active paid orders can be cancelled." },
@@ -63,7 +68,6 @@ export async function POST(req) {
       );
     }
 
-    // 4. Strict 30-Minute Window Validation Rule
     const createdAtTime = new Date(order.createdAt).getTime();
     const currentTime = Date.now();
     const diffMinutes = (currentTime - createdAtTime) / (1000 * 60);
@@ -75,27 +79,34 @@ export async function POST(req) {
       );
     }
 
-    // 5. Razorpay Automated Refund Request
-    if (order.razorpayPaymentId) {
+    const paymentId = order.razorpayPaymentId || order.paymentId;
+    if (paymentId) {
       try {
-        await razorpay.payments.refund(order.razorpayPaymentId, {
-          amount: Math.round(Number(order.amount || 0) * 100), // Amount in paise
-          speed: "normal",
-          notes: { reason: "Customer requested cancellation within 30-min window" },
+        // IDEMPOTENCY KEY: Prevents duplicate gateway refunds on network retries
+        await razorpay.payments.refund(paymentId, {
+          amount: Math.round(Number(order.amount || 0) * 100),
+          speed: "optimum",
+          notes: { 
+            reason: "Customer requested cancellation within 30-min window",
+            orderId: order._id.toString() 
+          },
+        }, {
+          headers: {
+            "X-Idempotency-Key": `user_cancel_${order._id.toString()}`
+          }
         });
       } catch (razorpayErr) {
         console.error("Razorpay Refund Gateway Error:", razorpayErr);
       }
     }
 
-    // 6. Update Order Status
     order.status = "Refund Initiated";
     order.cancelledAt = new Date();
     await order.save();
 
     return NextResponse.json({ 
       success: true, 
-      message: "Order cancelled successfully. Refund has been initiated and will reflect in your account within 3-5 working days." 
+      message: "Order cancelled successfully. Refund initiated to your original payment method (takes 3-7 business days)." 
     }, { status: 200 });
 
   } catch (err) {
