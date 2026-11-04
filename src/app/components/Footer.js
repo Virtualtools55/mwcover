@@ -43,7 +43,7 @@ export default function Footer() {
           <div className="bg-neutral-950 p-4 rounded-2xl border border-neutral-800/80 space-y-1">
             <p className="text-[11px] font-bold text-white flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
-              3-5 Day Refunds
+              Free cancellation
             </p>
             <p className="text-[10px] text-neutral-400">Instant 30-minute cancellation window on all paid orders.</p>
           </div>

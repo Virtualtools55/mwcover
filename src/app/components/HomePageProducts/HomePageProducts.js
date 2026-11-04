@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import { Search, PackageOpen, ChevronLeft, ChevronRight, SlidersHorizontal, MoveRight, CheckCircle2, ShoppingBag } from "lucide-react";
 
@@ -412,19 +413,25 @@ export default function HomePage() {
 
 // Reusable Product Card Component
 function ProductCard({ product, onAddToCartSuccess }) {
+  const router = useRouter();
   const [adding, setAdding] = useState(false);
 
   const origPrice = Number(product.originalPrice) || 0;
   const sellPrice = Number(product.price) || 0;
   const discountPercent = origPrice > sellPrice ? Math.round(((origPrice - sellPrice) / origPrice) * 100) : 0;
 
+  const productId = product._id || product.id;
+
+  const handleCardClick = () => {
+    router.push(`/product/${productId}`);
+  };
+
   const handleAddToCart = async (e) => {
+    e.stopPropagation(); // Prevents card click redirection when adding to bag
     e.preventDefault();
     setAdding(true);
 
     try {
-      const productId = product._id || product.id;
-      
       const res = await fetch("/api/cart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -457,7 +464,10 @@ function ProductCard({ product, onAddToCartSuccess }) {
   };
 
   return (
-    <div className="bg-white border border-neutral-200/60 rounded-2xl overflow-hidden hover:border-amber-400 transition-all duration-200 group flex flex-col justify-between shadow-xs hover:shadow-lg w-full">
+    <div 
+      onClick={handleCardClick}
+      className="bg-white border border-neutral-200/60 rounded-2xl overflow-hidden hover:border-amber-400 transition-all duration-200 group flex flex-col justify-between shadow-xs hover:shadow-lg w-full cursor-pointer"
+    >
       <div>
         <div className="relative aspect-square overflow-hidden bg-neutral-100">
           <img
@@ -497,10 +507,10 @@ function ProductCard({ product, onAddToCartSuccess }) {
         </div>
       </div>
 
-      <div className="p-3 pt-0 grid grid-cols-2 gap-1.5">
+      <div className="p-3 pt-0 grid grid-cols-2 gap-1.5" onClick={(e) => e.stopPropagation()}>
         <Link
-          href={`/product/${product._id || product.id}`}
-          className="w-full block text-center bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold py-2 rounded-xl text-[11px] transition-all border border-neutral-200"
+          href={`/product/${productId}`}
+          className="w-full block text-center bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold py-2 rounded-xl text-[11px] transition-all border border-neutral-200 cursor-pointer"
         >
           Details
         </Link>

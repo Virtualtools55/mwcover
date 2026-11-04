@@ -76,7 +76,7 @@ export default function Navbar() {
           />
           <div className="mt-1 flex items-center justify-center gap-1.5 whitespace-nowrap">
             <span className="text-[9px] leading-none font-semibold text-zinc-300 group-hover:text-yellow-400 transition-colors duration-200">
-              केसियो
+              केसिओ
             </span>
             <span className="text-[8px] leading-none text-zinc-600">•</span>
             <span className="text-[8px] leading-none font-medium tracking-wide text-zinc-500">
@@ -118,7 +118,7 @@ export default function Navbar() {
         <Link href="/" className="group flex flex-col items-center justify-center leading-none">
           <img src="/caseologo.png" alt="Caseo Logo" className="h-10 w-auto object-contain" />
           <div className="mt-1 flex items-center justify-center gap-1 whitespace-nowrap">
-            <span className="text-[8px] leading-none font-semibold text-zinc-300">केसियो</span>
+            <span className="text-[8px] leading-none font-semibold text-zinc-300">केसिओ</span>
             <span className="text-[7px] leading-none text-zinc-600">•</span>
             <span className="text-[7px] leading-none font-medium tracking-wide text-zinc-500">Carry Your Vibe.</span>
           </div>
