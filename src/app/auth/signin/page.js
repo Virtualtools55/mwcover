@@ -251,7 +251,7 @@ export default function SignInPage() {
                 type="email"
                 required
                 readOnly={otpSent}
-                placeholder="yourname@gmail.com"
+                placeholder="enter your Gmail address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full border rounded-2xl px-4 py-3 text-xs transition-colors focus:outline-none ${

@@ -449,7 +449,7 @@ function SignUpContent() {
                 minLength={2}
                 maxLength={60}
                 autoComplete="name"
-                placeholder="Rahul Sharma"
+                placeholder="enter your full name"
                 value={formData.name}
                 onChange={handleNameChange}
                 className={`w-full border rounded-2xl pl-10 pr-4 py-2.5 text-xs transition-all focus:outline-none ${
@@ -494,7 +494,7 @@ function SignUpContent() {
                 readOnly={otpSent}
                 maxLength={254}
                 autoComplete="email"
-                placeholder="rahul@gmail.com"
+                placeholder="enter your Gmail address"
                 value={formData.email}
                 onChange={(e) => {
                   setFormData((prev) => ({
@@ -536,7 +536,7 @@ function SignUpContent() {
                 maxLength={10}
                 inputMode="numeric"
                 autoComplete="tel"
-                placeholder="9876543210"
+                placeholder="enter your mobile number"
                 value={formData.mobile}
                 onChange={(e) => {
                   const value = e.target.value
@@ -621,7 +621,7 @@ function SignUpContent() {
                 maxLength={6}
                 inputMode="numeric"
                 autoComplete="postal-code"
-                placeholder="110001"
+                placeholder="••••••"
                 value={formData.pincode}
                 onChange={(e) => {
                   const value = e.target.value
