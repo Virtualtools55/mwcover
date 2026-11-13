@@ -1,4 +1,3 @@
-// app/admin/dashboard/page.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -168,7 +167,7 @@ export default function AdminDashboardPage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await fetch("/api/admin/auth/logout", { method: "POST" });
       router.push("/admin/admin-login");
     } catch (err) {
       showToast("Failed to log out.", "error");
@@ -252,69 +251,110 @@ export default function AdminDashboardPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-10 space-y-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          <div className="lg:col-span-5 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl space-y-8">
-            <div>
-              <div className="mb-6 flex items-center gap-2 border-b border-neutral-800 pb-4">
-                <PlusCircle className="w-5 h-5 text-yellow-400" />
-                <h2 className="text-lg font-bold text-white">Add New Product</h2>
-              </div>
-              <AddProductForm onProductAdded={handleProductAdded} categoriesList={CATEGORIES_LIST} />
+          {/* Left Column: Add Product Form */}
+          <div className="lg:col-span-5 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl space-y-6">
+            <div className="flex items-center gap-2 border-b border-neutral-800 pb-4">
+              <PlusCircle className="w-5 h-5 text-yellow-400" />
+              <h2 className="text-lg font-bold text-white">Add New Product</h2>
             </div>
+            <AddProductForm onProductAdded={handleProductAdded} categoriesList={CATEGORIES_LIST} />
           </div>
 
-          <div className="lg:col-span-7 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl">
-            <div className="mb-6 flex items-center justify-between border-b border-neutral-800 pb-4">
-              <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-yellow-400" />
-                <h2 className="text-lg font-bold text-white">Existing Catalog</h2>
+          {/* Right Column: Existing Catalog with Custom Premium Scrollbar */}
+          <div className="lg:col-span-7 bg-[#121212] border border-neutral-800 p-6 rounded-2xl shadow-xl flex flex-col h-[640px]">
+            <div className="mb-5 flex items-center justify-between border-b border-neutral-800 pb-4 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-yellow-400/10 border border-yellow-400/20 rounded-lg">
+                  <Package className="w-5 h-5 text-yellow-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white leading-tight">Existing Catalog</h2>
+                  <p className="text-[11px] text-neutral-400">Scroll to inspect or remove active inventory</p>
+                </div>
               </div>
-              <span className="text-xs bg-neutral-800 text-yellow-400 px-3 py-1 rounded-full font-medium">
-                {products.length} Items Total
+              <span className="text-xs bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 px-3.5 py-1.5 rounded-full font-semibold tracking-wide">
+                {products.length} {products.length === 1 ? "Item" : "Items"}
               </span>
             </div>
 
             {loading ? (
-              <div className="text-center py-12 text-neutral-500 text-sm">Loading products...</div>
+              <div className="flex-1 flex flex-col items-center justify-center text-neutral-500 text-sm space-y-2">
+                <div className="w-6 h-6 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin" />
+                <span>Loading products...</span>
+              </div>
             ) : products.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-neutral-800 rounded-xl">
-                <p className="text-neutral-400 text-sm font-medium">No products added yet.</p>
-                <p className="text-neutral-600 text-xs mt-1">Use the left form to upload your first item.</p>
+              <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-neutral-800 rounded-xl bg-neutral-900/30">
+                <Package className="w-8 h-8 text-neutral-600 mb-2" />
+                <p className="text-neutral-300 text-sm font-medium">No products added yet.</p>
+                <p className="text-neutral-500 text-xs mt-1">Use the left form to upload your first item.</p>
               </div>
             ) : (
-              <div className="space-y-4 max-h-[750px] overflow-y-auto pr-2">
-                {products.map((product) => (
-                  <div key={product._id} className="flex items-center justify-between bg-neutral-900/80 border border-neutral-800 p-3.5 rounded-xl hover:border-yellow-400/50 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <img src={product.imageUrl} alt={product.title} className="w-14 h-14 object-cover rounded-lg bg-neutral-800 border border-neutral-700" />
-                      <div>
-                        <h3 className="text-sm font-semibold text-neutral-100 group-hover:text-yellow-400 transition-colors">
-                          {product.title}
-                        </h3>
-                        <span className="inline-block text-[10px] bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded mt-0.5">
-                          {product.category || "mobile-accessories"}
-                        </span>
-                        
-                        {/* Dual Pricing Display: Strikethrough Original MRP in red followed by Selling Price */}
-                        <div className="flex items-center gap-2.5 mt-1">
-                          <span className="text-xs font-bold text-yellow-400">₹{product.price}</span>
-                          {product.originalPrice && Number(product.originalPrice) > Number(product.price) && (
-                            <span className="text-[11px] text-rose-500 line-through font-mono">
-                              ₹{product.originalPrice}
+              <div className="flex-1 overflow-y-auto pr-3 space-y-3 min-h-0 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] [scrollbar-color:#404040_#171717] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#171717] [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#404040] [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-yellow-400 transition-colors">
+                {products.map((product) => {
+                  const hasDiscount =
+                    product.originalPrice && Number(product.originalPrice) > Number(product.price);
+                  const discountPercent = hasDiscount
+                    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+                    : 0;
+
+                  return (
+                    <div
+                      key={product._id}
+                      className="flex items-center justify-between bg-[#171717] hover:bg-[#1C1C1C] border border-neutral-800/90 hover:border-yellow-400/40 p-3.5 rounded-xl transition-all duration-200 group shadow-sm"
+                    >
+                      <div className="flex items-center gap-4 min-w-0">
+                        {/* Product Thumbnail */}
+                        <div className="relative w-14 h-14 shrink-0 rounded-xl overflow-hidden bg-neutral-900 border border-neutral-800 group-hover:border-yellow-400/30 transition-colors">
+                          <img
+                            src={product.imageUrl}
+                            alt={product.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-semibold text-neutral-100 group-hover:text-yellow-400 transition-colors truncate">
+                            {product.title}
+                          </h3>
+
+                          {/* Category Pill */}
+                          <div className="mt-1 flex items-center gap-2">
+                            <span className="inline-block text-[10px] font-medium uppercase tracking-wider bg-neutral-800/90 text-neutral-300 border border-neutral-700/60 px-2 py-0.5 rounded-md">
+                              {product.category || "mobile-accessories"}
                             </span>
-                          )}
+                            {hasDiscount && (
+                              <span className="text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                                {discountPercent}% OFF
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Pricing Row */}
+                          <div className="flex items-center gap-2.5 mt-1">
+                            <span className="text-sm font-bold text-yellow-400">
+                              ₹{Number(product.price).toLocaleString("en-IN")}
+                            </span>
+                            {hasDiscount && (
+                              <span className="text-xs text-rose-500/90 line-through font-mono">
+                                ₹{Number(product.originalPrice).toLocaleString("en-IN")}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <button
-                      onClick={() => handleDelete(product._id)}
-                      className="p-2.5 bg-neutral-800 hover:bg-rose-500/20 text-neutral-400 hover:text-rose-400 rounded-lg transition-colors border border-transparent hover:border-rose-500/30 cursor-pointer"
-                      title="Delete Product"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
+                      {/* Delete Action */}
+                      <button
+                        onClick={() => handleDelete(product._id)}
+                        className="ml-3 shrink-0 p-2.5 bg-neutral-900 hover:bg-rose-500/15 text-neutral-400 hover:text-rose-400 rounded-xl transition-all border border-neutral-800 hover:border-rose-500/40 cursor-pointer"
+                        title="Delete Product"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
